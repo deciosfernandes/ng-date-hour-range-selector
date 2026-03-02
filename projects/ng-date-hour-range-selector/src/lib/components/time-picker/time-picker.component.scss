@@ -1,0 +1,93 @@
+:host {
+  display: block;
+}
+
+.drs-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: var(--drs-radius, 8px);
+  background: var(--drs-time-bg, rgba(255, 255, 255, 0.05));
+}
+
+/* ─── Column (hour or minute) ──────────────────────────────────────────────── */
+
+.drs-time__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.drs-time__value {
+  font-size: var(--drs-time-font-size, 1.375rem);
+  font-weight: 500;
+  color: var(--drs-text, #ffffff);
+  min-width: 2ch;
+  text-align: center;
+}
+
+/* ─── Colon separator ──────────────────────────────────────────────────────── */
+
+.drs-time__sep {
+  font-size: var(--drs-time-font-size, 1.375rem);
+  font-weight: 500;
+  color: var(--drs-text-muted, rgba(255, 255, 255, 0.45));
+  align-self: center;
+  padding-bottom: 2px;
+}
+
+/* ─── Chevron buttons ──────────────────────────────────────────────────────── */
+
+.drs-time__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--drs-text, #ffffff);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--drs-radius-sm, 4px);
+  transition:
+    background 0.12s,
+    color 0.12s;
+
+  &:hover {
+    background: var(--drs-hover, rgba(255, 255, 255, 0.08));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--drs-primary, #f97316);
+    outline-offset: 1px;
+  }
+}
+
+/* ─── AM/PM toggle ─────────────────────────────────────────────────────────── */
+
+.drs-time__ampm {
+  margin-left: 8px;
+  padding: 0;
+  font-size: var(--drs-ampm-font-size, 0.9375rem);
+  font-weight: 500;
+  color: var(--drs-text-muted, rgba(255, 255, 255, 0.55));
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  align-self: center;
+  transition: color 0.12s;
+
+  &:hover {
+    color: var(--drs-text, #ffffff);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--drs-primary, #f97316);
+    outline-offset: 2px;
+    border-radius: var(--drs-radius-sm, 4px);
+  }
+}

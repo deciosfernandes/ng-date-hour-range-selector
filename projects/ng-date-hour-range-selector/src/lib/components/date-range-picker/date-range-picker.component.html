@@ -1,0 +1,111 @@
+<!-- Trigger button -->
+<button
+  #trigger
+  class="drs-picker__trigger"
+  type="button"
+  [attr.aria-expanded]="isOpen()"
+  aria-haspopup="dialog"
+  [attr.aria-label]="ariaLabel()"
+  [disabled]="isDisabled() ? true : null"
+  (click)="toggle()"
+>
+  @if (resolvedConfig().calendarIcon === 'left') {
+    <svg
+      class="drs-picker__icon"
+      aria-hidden="true"
+      focusable="false"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M6 2a1 1 0 0 0-1 1v1H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1V3a1 1 0 1 0-2 0v1H7V3a1 1 0 0 0-1-1ZM4 8h12v8H4V8Z"
+      />
+    </svg>
+  }
+  <span class="drs-picker__display">
+    {{ displayValue() || (locale.placeholder ?? 'Select date range') }}
+  </span>
+  @if (resolvedConfig().calendarIcon === 'right') {
+    <svg
+      class="drs-picker__icon"
+      aria-hidden="true"
+      focusable="false"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M6 2a1 1 0 0 0-1 1v1H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1V3a1 1 0 1 0-2 0v1H7V3a1 1 0 0 0-1-1ZM4 8h12v8H4V8Z"
+      />
+    </svg>
+  }
+</button>
+
+<!-- Overlay template (attached to body via CDK TemplatePortal) -->
+<ng-template #overlayTpl>
+  <div class="drs-overlay" role="dialog" aria-modal="true" aria-label="Date range picker">
+    <div class="drs-overlay__panel">
+      <!-- Sidebar: predefined ranges -->
+      <drs-predefined-ranges
+        class="drs-overlay__sidebar"
+        [ranges]="resolvedPredefinedRanges()"
+        [activeLabel]="activeRangeLabel()"
+        [showReset]="resolvedConfig().showResetButton"
+        (rangeSelect)="onRangeSelect($event)"
+        (reset)="onReset()"
+      />
+
+      <!-- Calendar -->
+      <div class="drs-overlay__calendar">
+        <drs-calendar
+          [year]="viewYear()"
+          [month]="viewMonth()"
+          [rangeStart]="rangeStart()"
+          [rangeEnd]="rangeEnd()"
+          [minDate]="resolvedConfig().minDate ?? null"
+          [maxDate]="resolvedConfig().maxDate ?? null"
+          [weekStartsOn]="resolvedConfig().weekStartsOn"
+          (prevMonth)="prevMonth()"
+          (nextMonth)="nextMonth()"
+          (dateSelect)="onDateSelect($event)"
+        />
+      </div>
+
+      <!-- Time pickers -->
+      @if (resolvedConfig().showTime) {
+        <div class="drs-overlay__times">
+          <!-- Start time -->
+          <div class="drs-time-section">
+            <span class="drs-time-section__label">{{ locale.startTime }}</span>
+            <drs-time-picker
+              [hour]="startHour()"
+              [minute]="startMinute()"
+              [timeFormat]="resolvedConfig().timeFormat"
+              [minuteStep]="resolvedConfig().minuteStep"
+              [ariaLabel]="locale.startTime"
+              (timeChange)="onStartTimeChange($event)"
+            />
+          </div>
+
+          <!-- End time -->
+          <div class="drs-time-section">
+            <span class="drs-time-section__label">{{ locale.endTime }}</span>
+            <drs-time-picker
+              [hour]="endHour()"
+              [minute]="endMinute()"
+              [timeFormat]="resolvedConfig().timeFormat"
+              [minuteStep]="resolvedConfig().minuteStep"
+              [ariaLabel]="locale.endTime"
+              (timeChange)="onEndTimeChange($event)"
+            />
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-template>

@@ -1,0 +1,141 @@
+/* ─── CSS Custom Properties (public theming API) ────────────────────────────
+   Override any of these in your global styles or per-component host to
+   customise the picker's appearance:
+
+   :root {
+     --drs-bg:           #1e1e1e;
+     --drs-primary:      #f97316;
+     --drs-primary-fg:   #ffffff;
+     --drs-text:         #ffffff;
+     --drs-text-muted:   rgba(255, 255, 255, 0.35);
+     --drs-border:       rgba(255, 255, 255, 0.08);
+     --drs-hover:        rgba(255, 255, 255, 0.07);
+     --drs-range-bg:     rgba(249, 115, 22, 0.15);
+     --drs-radius:       10px;
+     --drs-radius-sm:    5px;
+     --drs-shadow:       0 8px 32px rgba(0, 0, 0, 0.5);
+     --drs-font-family:  inherit;
+     --drs-sidebar-width: 148px;
+     --drs-overlay-z:    1000;
+   }
+──────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Host / trigger container ──────────────────────────────────────────── */
+
+:host {
+  display: inline-block;
+}
+
+/* ─── Trigger button ─────────────────────────────────────────────────────── */
+
+.drs-picker__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  min-width: 220px;
+  background: var(--drs-trigger-bg, var(--drs-bg, #1e1e1e));
+  color: var(--drs-text, #ffffff);
+  border: 1px solid var(--drs-border, rgba(255, 255, 255, 0.12));
+  border-radius: var(--drs-radius, 10px);
+  font-family: var(--drs-font-family, inherit);
+  font-size: var(--drs-trigger-font-size, 0.875rem);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+  &:hover:not([disabled]) {
+    border-color: var(--drs-primary, #f97316);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--drs-primary, #f97316);
+  }
+
+  &[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.drs-picker__display {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  /* Dimmed when no value */
+  :host-context(.drs-picker:not([value])) & {
+    color: var(--drs-text-muted, rgba(255, 255, 255, 0.4));
+  }
+}
+
+.drs-picker__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--drs-text-muted, rgba(255, 255, 255, 0.45));
+}
+
+/* ─── Overlay panel ──────────────────────────────────────────────────────── */
+
+.drs-overlay {
+  font-family: var(--drs-font-family, inherit);
+  font-size: var(--drs-font-size, 0.875rem);
+  color: var(--drs-text, #ffffff);
+  z-index: var(--drs-overlay-z, 1000);
+}
+
+.drs-overlay__panel {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  background: var(--drs-bg, #1e1e1e);
+  border: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--drs-radius, 10px);
+  box-shadow: var(--drs-shadow, 0 8px 32px rgba(0, 0, 0, 0.5));
+  overflow: hidden;
+}
+
+/* ─── Sidebar ────────────────────────────────────────────────────────────── */
+
+.drs-overlay__sidebar {
+  border-right: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+  padding: 16px 0;
+}
+
+/* ─── Calendar area ──────────────────────────────────────────────────────── */
+
+.drs-overlay__calendar {
+  padding: 16px 20px;
+  flex-shrink: 0;
+}
+
+/* ─── Time pickers ───────────────────────────────────────────────────────── */
+
+.drs-overlay__times {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 16px 20px;
+  border-left: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+  flex-shrink: 0;
+  min-width: 160px;
+  justify-content: flex-start;
+}
+
+.drs-time-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drs-time-section__label {
+  font-size: var(--drs-label-font-size, 0.8125rem);
+  font-weight: 700;
+  color: var(--drs-text, #ffffff);
+  letter-spacing: 0.01em;
+}

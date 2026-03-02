@@ -1,0 +1,188 @@
+:host {
+  display: block;
+}
+
+.drs-cal {
+  user-select: none;
+  min-width: 280px;
+}
+
+/* ─── Header ───────────────────────────────────────────────────────────────── */
+
+.drs-cal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 12px;
+}
+
+.drs-cal__title {
+  font-size: var(--drs-header-font-size, 0.9375rem);
+  font-weight: var(--drs-header-font-weight, 700);
+  color: var(--drs-text, #ffffff);
+  letter-spacing: 0.01em;
+}
+
+.drs-cal__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--drs-radius-sm, 4px);
+  background: transparent;
+  color: var(--drs-text, #ffffff);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover:not([disabled]) {
+    background: var(--drs-hover, rgba(255, 255, 255, 0.08));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--drs-primary, #f97316);
+    outline-offset: 2px;
+  }
+}
+
+/* ─── Weekday headers ──────────────────────────────────────────────────────── */
+
+.drs-cal__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.drs-cal__weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  font-size: var(--drs-weekday-font-size, 0.75rem);
+  font-weight: 600;
+  color: var(--drs-text-muted, rgba(255, 255, 255, 0.35));
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Day grid ─────────────────────────────────────────────────────────────── */
+
+.drs-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+}
+
+.drs-cal__day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  font-size: var(--drs-day-font-size, 0.875rem);
+  font-weight: 400;
+  color: var(--drs-text, #ffffff);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 0;
+  z-index: 0;
+  transition: color 0.1s;
+  box-sizing: content-box;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    z-index: -1;
+    transition: background 0.1s;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background: transparent;
+    z-index: -1;
+    transition: background 0.1s;
+  }
+
+  &:hover:not([disabled]):not(.drs-cal__day--range-start):not(.drs-cal__day--range-end) {
+    &::after {
+      background: var(--drs-hover, rgba(255, 255, 255, 0.08));
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--drs-primary, #f97316);
+    outline-offset: -2px;
+    border-radius: 50%;
+    z-index: 1;
+  }
+
+  /* Other-month days */
+  &--other-month {
+    color: var(--drs-text-muted, rgba(255, 255, 255, 0.25));
+  }
+
+  /* Today */
+  &--today:not(.drs-cal__day--range-start):not(.drs-cal__day--range-end) {
+    color: var(--drs-primary, #f97316);
+    font-weight: 700;
+  }
+
+  /* In-range (between start and end, exclusive) */
+  &--in-range {
+    color: var(--drs-text, #ffffff);
+
+    &::before {
+      background: var(--drs-range-bg, rgba(249, 115, 22, 0.15));
+    }
+  }
+
+  /* Range start */
+  &--range-start {
+    color: var(--drs-primary-fg, #ffffff);
+
+    &::before {
+      background: var(--drs-range-bg, rgba(249, 115, 22, 0.15));
+      border-radius: 50% 0 0 50%;
+    }
+
+    &::after {
+      background: var(--drs-primary, #f97316);
+    }
+  }
+
+  /* Range end */
+  &--range-end {
+    color: var(--drs-primary-fg, #ffffff);
+
+    &::before {
+      background: var(--drs-range-bg, rgba(249, 115, 22, 0.15));
+      border-radius: 0 50% 50% 0;
+    }
+
+    &::after {
+      background: var(--drs-primary, #f97316);
+    }
+  }
+
+  /* Single-day range: both start & end */
+  &--range-start.drs-cal__day--range-end {
+    &::before {
+      background: transparent;
+    }
+  }
+
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+}

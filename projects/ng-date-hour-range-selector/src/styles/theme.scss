@@ -1,0 +1,129 @@
+/**
+ * ng-date-hour-range-selector – Theme file (dark default + light variant)
+ *
+ * Import this file once in your global styles:
+ *
+ *   @import 'ng-date-hour-range-selector/styles/theme';
+ *
+ * ─── Switching themes ──────────────────────────────────────────────────────
+ *
+ * Dark theme (default):  applied via :root — no extra work needed.
+ *
+ * Light theme (class):   add the class to any ancestor element or to the
+ *                        picker host element itself:
+ *
+ *   <body class="drs-theme-light">…</body>
+ *   <drs-date-range-picker class="drs-theme-light" … />
+ *
+ * Light theme (auto):    the light theme activates automatically when the
+ *                        user's OS preference is "light" via the media query
+ *                        below. You can disable this by adding:
+ *
+ *   @media (prefers-color-scheme: light) { :root { --drs-bg: #1e1f22; … } }
+ *
+ * Override any variable at any scope:
+ *
+ *   :root { --drs-primary: #3b82f6; }           // change accent colour globally
+ *   drs-date-range-picker { --drs-bg: #fff; }   // override on one instance
+ *
+ * ─── Full variable reference ───────────────────────────────────────────────
+ *
+ * Layout & shape
+ *   --drs-radius           Border radius for the overlay panel        (10px)
+ *   --drs-radius-sm        Border radius for small elements (buttons)  (5px)
+ *   --drs-sidebar-width    Width of the predefined-ranges sidebar      (148px)
+ *   --drs-overlay-z        z-index of the overlay                      (1000)
+ *   --drs-shadow           Box shadow of the overlay panel
+ *
+ * Colours
+ *   --drs-bg               Modal / overlay background
+ *   --drs-trigger-bg       Background of the trigger button (defaults to --drs-bg)
+ *   --drs-primary          Accent / highlight colour (selected dates, active label)
+ *   --drs-primary-fg       Foreground on the primary colour (text on range-start/end)
+ *   --drs-text             Main text colour
+ *   --drs-text-muted       Secondary / dimmed text colour
+ *   --drs-border           Border / divider colour
+ *   --drs-hover            Hover background colour
+ *   --drs-range-bg         Background for days between start and end
+ *   --drs-time-bg          Background of the time-picker box
+ *
+ * Typography
+ *   --drs-font-family      Font family for all picker elements
+ *   --drs-font-size        Base font size
+ *   --drs-header-font-size Month / year header font size
+ *   --drs-header-font-weight Month / year header font weight
+ *   --drs-weekday-font-size  Day-of-week labels font size
+ *   --drs-day-font-size      Day numbers font size
+ *   --drs-sidebar-font-size  Predefined-range label size
+ *   --drs-time-font-size     Hour/minute number size
+ *   --drs-ampm-font-size     AM/PM toggle font size
+ *   --drs-label-font-size    "Start time:" / "End time:" label size
+ *   --drs-trigger-font-size  Trigger-button text size
+ */
+
+:root {
+  --drs-radius: 10px;
+  --drs-radius-sm: 5px;
+  --drs-sidebar-width: 148px;
+  --drs-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --drs-overlay-z: 1000;
+
+  --drs-bg: #1e1f22;
+  --drs-primary: #f97316;
+  --drs-primary-fg: #ffffff;
+  --drs-text: #f1f1f1;
+  --drs-text-muted: rgba(241, 241, 241, 0.35);
+  --drs-border: rgba(255, 255, 255, 0.08);
+  --drs-hover: rgba(255, 255, 255, 0.07);
+  --drs-range-bg: rgba(249, 115, 22, 0.14);
+  --drs-time-bg: rgba(255, 255, 255, 0.05);
+
+  --drs-font-family: inherit;
+  --drs-font-size: 0.875rem;
+  --drs-header-font-size: 0.9375rem;
+  --drs-header-font-weight: 700;
+  --drs-weekday-font-size: 0.6875rem;
+  --drs-day-font-size: 0.875rem;
+  --drs-sidebar-font-size: 0.875rem;
+  --drs-time-font-size: 1.375rem;
+  --drs-ampm-font-size: 0.9375rem;
+  --drs-label-font-size: 0.8125rem;
+  --drs-trigger-font-size: 0.875rem;
+}
+
+/* ─── Light theme ──────────────────────────────────────────────────────────
+ * Applied via the .drs-theme-light class on any ancestor element,
+ * or automatically when the OS preference is "light".
+ * -------------------------------------------------------------------------- */
+
+$drs-light-vars: (
+  --drs-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+  --drs-bg: #ffffff,
+  --drs-primary: #f97316,
+  --drs-primary-fg: #ffffff,
+  --drs-text: #111827,
+  --drs-text-muted: rgba(17, 24, 39, 0.4),
+  --drs-border: rgba(0, 0, 0, 0.1),
+  --drs-hover: rgba(0, 0, 0, 0.05),
+  --drs-range-bg: rgba(249, 115, 22, 0.1),
+  --drs-time-bg: rgba(0, 0, 0, 0.04),
+);
+
+.drs-theme-light {
+  @each $var, $value in $drs-light-vars {
+    #{$var}: #{$value};
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    @each $var, $value in $drs-light-vars {
+      #{$var}: #{$value};
+    }
+  }
+}
+
+/* Transparent CDK backdrop */
+.drs-overlay-backdrop {
+  background: transparent;
+}

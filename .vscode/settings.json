@@ -1,0 +1,8 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "/^npx ng generate library ng-date-hour-range-selector --no-interactive 2>&1$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}

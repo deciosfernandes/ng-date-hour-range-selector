@@ -1,0 +1,25 @@
+{
+  "name": "ng-date-hour-range-selector",
+  "version": "1.0.0",
+  "description": "Flexible Angular date / date-time range selector with CDK overlay, predefined ranges, localization, and full CSS customisation.",
+  "keywords": [
+    "angular",
+    "date-picker",
+    "date-range",
+    "time-picker",
+    "datetime-range",
+    "cdk",
+    "range-picker"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@angular/cdk": "^21.0.0",
+    "@angular/common": "^21.0.0",
+    "@angular/core": "^21.0.0",
+    "@angular/forms": "^21.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

@@ -1,0 +1,83 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: var(--drs-sidebar-width, 140px);
+}
+
+.drs-prd {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ─── Range list ───────────────────────────────────────────────────────────── */
+
+.drs-prd__list {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.drs-prd__item {
+  display: block;
+}
+
+.drs-prd__btn {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: var(--drs-sidebar-font-size, 0.875rem);
+  color: var(--drs-text, #ffffff);
+  background: transparent;
+  border: none;
+  border-radius: var(--drs-radius-sm, 4px);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--drs-hover, rgba(255, 255, 255, 0.07));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--drs-primary, #f97316);
+    outline-offset: 1px;
+  }
+
+  &--active {
+    color: var(--drs-primary, #f97316);
+    font-weight: 600;
+  }
+}
+
+/* ─── Reset button ─────────────────────────────────────────────────────────── */
+
+.drs-prd__reset {
+  margin-top: 12px;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: var(--drs-sidebar-font-size, 0.875rem);
+  color: var(--drs-primary, #f97316);
+  background: transparent;
+  border: none;
+  border-radius: var(--drs-radius-sm, 4px);
+  cursor: pointer;
+  transition: opacity 0.12s;
+
+  &:hover {
+    opacity: 0.75;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--drs-primary, #f97316);
+    outline-offset: 1px;
+  }
+}

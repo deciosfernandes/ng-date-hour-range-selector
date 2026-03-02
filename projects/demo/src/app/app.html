@@ -1,0 +1,48 @@
+<main class="demo-page">
+  <header class="demo-header">
+    <h1>ng-date-hour-range-selector</h1>
+    <p class="demo-subtitle">Angular date &amp; time range picker with CDK overlay</p>
+  </header>
+
+  <section class="demo-section">
+    <h2>reactive form binding</h2>
+    <div class="demo-row">
+      <drs-date-range-picker
+        [formControl]="rangeControl"
+        (rangeChange)="onRangeChange($event)"
+        ariaLabel="Demo date range"
+      />
+
+      <div class="demo-nav-btns">
+        <button class="demo-btn" type="button" (click)="previous()" title="Previous range">&#8592; Previous</button>
+        <button class="demo-btn" type="button" (click)="next()" title="Next range">Next &#8594;</button>
+      </div>
+    </div>
+
+    @if (lastEmitted(); as range) {
+      <div class="demo-output">
+        <strong>Selected range:</strong><br />
+        Start: {{ range.start | date: 'medium' }}<br />
+        End:   {{ range.end   | date: 'medium' }}
+      </div>
+    }
+  </section>
+
+  <section class="demo-section">
+    <h2>no time, 24-hour, custom accent</h2>
+    <drs-date-range-picker
+      [showTime]="false"
+      style="--drs-primary: #3b82f6;"
+      ariaLabel="Date-only picker"
+    />
+  </section>
+
+  <section class="demo-section">
+    <h2>24-hour, monday start</h2>
+    <drs-date-range-picker
+      timeFormat="24h"
+      [weekStartsOn]="0"
+      ariaLabel="24h picker"
+    />
+  </section>
+</main>
