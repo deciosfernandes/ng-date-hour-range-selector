@@ -491,6 +491,29 @@ describe('DateRangePickerComponent', () => {
       expect(component['viewYear']()).toBe(2025);
       expect(component['viewMonth']()).toBe(7);
     });
+
+    it('does not emit rangeChange when emitEvent is false', () => {
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      const range: DateRange = { start: new Date(2024, 3, 1), end: new Date(2024, 3, 30) };
+      component.setRange(range, false);
+
+      expect(component.value()?.start.getMonth()).toBe(3);
+      expect(emitted.length).toBe(0);
+    });
+
+    it('does not emit rangeChange on null clear when emitEvent is false', () => {
+      component.writeValue({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 31) });
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component.setRange(null, false);
+
+      expect(component.value()).toBeNull();
+      expect(emitted.length).toBe(0);
+    });
   });
 
   // ─── onApply ───────────────────────────────────────────────────────────

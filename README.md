@@ -105,7 +105,7 @@ export class MyComponent {
 | ------------------- | ------------------------------------------------------------------------------------ |
 | `nextRange()`       | Advance the current range forward by its own duration (e.g. Mon–Sun → next Mon–Sun) |
 | `previousRange()`   | Rewind the current range backward by its own duration                                |
-| `setRange(range)`   | Programmatically set `DateRange \| null`; emits `rangeChange` just like user input   |
+| `setRange(range, emitEvent?)` | Programmatically set `DateRange \| null`; pass `emitEvent: false` to suppress `rangeChange` and CVA `onChange` |
 
 ### ControlValueAccessor
 

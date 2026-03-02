@@ -351,14 +351,36 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnDestroy
   }
 
   /**
-   * Programmatically set the selected range and emit rangeChange.
+   * Programmatically set the selected range.
    * Passing `null` clears the selection.
+   * @param range The range to apply, or `null` to clear.
+   * @param emitEvent When `false`, suppresses `rangeChange` output and CVA `onChange`. Defaults to `true`.
    */
-  setRange(range: DateRange | null): void {
+  setRange(range: DateRange | null, emitEvent = true): void {
     if (range) {
-      this.applyRange(range);
+      this.rangeStart.set(range.start);
+      this.rangeEnd.set(range.end);
+      this._viewYear.set(range.start.getFullYear());
+      this._viewMonth.set(range.start.getMonth());
+      this.activeRangeLabel.set(null);
+      this.value.set(range);
+      if (emitEvent) {
+        this.onChange(range);
+        this.rangeChange.emit(range);
+      }
     } else {
-      this.onReset();
+      this.rangeStart.set(null);
+      this.rangeEnd.set(null);
+      this.activeRangeLabel.set(null);
+      this.value.set(null);
+      this._pendingStartHour.set(0);
+      this._pendingStartMinute.set(0);
+      this._pendingEndHour.set(23);
+      this._pendingEndMinute.set(59);
+      if (emitEvent) {
+        this.onChange(null);
+        this.rangeChange.emit(null);
+      }
     }
   }
 
