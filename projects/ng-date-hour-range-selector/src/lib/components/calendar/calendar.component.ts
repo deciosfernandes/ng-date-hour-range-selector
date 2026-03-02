@@ -12,6 +12,7 @@ import { PICKER_LOCALE } from '../../tokens/locale.token';
 
 @Component({
   selector: 'drs-calendar',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './calendar.component.scss',
   template: `

@@ -104,6 +104,22 @@
               (timeChange)="onEndTimeChange($event)"
             />
           </div>
+
+          @if (resolvedConfig().showApplyButton) {
+            <div class="drs-apply-row">
+              <button class="drs-apply-btn" type="button" (click)="onApply()">
+                {{ locale.apply }}
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      @if (!resolvedConfig().showTime && resolvedConfig().showApplyButton) {
+        <div class="drs-apply-row drs-apply-row--inline">
+          <button class="drs-apply-btn" type="button" (click)="onApply()">
+            {{ locale.apply }}
+          </button>
         </div>
       }
     </div>

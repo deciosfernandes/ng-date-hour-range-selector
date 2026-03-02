@@ -25,8 +25,8 @@ A flexible Angular **date / date-time range selector** built on Angular CDK Over
 
 | Dependency     | Version   |
 | -------------- | --------- |
-| Angular        | `^21.0.0` |
-| `@angular/cdk` | `^21.0.0` |
+| Angular        | `>=19.0.0` |
+| `@angular/cdk` | `>=19.0.0` |
 
 ## Installation
 
@@ -79,17 +79,19 @@ export class MyComponent {
 
 ### Inputs
 
-| Input              | Type                  | Default               | Description                                |
-| ------------------ | --------------------- | --------------------- | ------------------------------------------ |
-| `showTime`         | `boolean`             | `true`                | Show the time-picker section               |
-| `timeFormat`       | `'12h' \| '24h'`      | `'12h'`               | 12-hour (AM/PM) or 24-hour format          |
-| `minuteStep`       | `number`              | `1`                   | Minute increment step                      |
-| `weekStartsOn`     | `0 \| 1`              | `1`                   | First day of week — `0` Sunday, `1` Monday |
-| `predefinedRanges` | `PredefinedRange[]`   | built-in              | Sidebar shortcut definitions               |
-| `minDate`          | `Date`                | —                     | Minimum selectable date (inclusive)        |
-| `maxDate`          | `Date`                | —                     | Maximum selectable date (inclusive)        |
-| `position`         | `ConnectedPosition[]` | bottom-start          | CDK Overlay connected positions            |
-| `ariaLabel`        | `string`              | `'Select date range'` | Accessible label for the trigger button    |
+| Input              | Type                  | Default               | Description                                                                       |
+| ------------------ | --------------------- | --------------------- | --------------------------------------------------------------------------------- |
+| `showTime`         | `boolean`             | `true`                | Show the time-picker section                                                      |
+| `timeFormat`       | `'12h' \| '24h'`      | `'12h'`               | 12-hour (AM/PM) or 24-hour format                                                 |
+| `minuteStep`       | `number`              | `1`                   | Minute increment step                                                             |
+| `weekStartsOn`     | `0 \| 1`              | `1`                   | First day of week — `0` Sunday, `1` Monday                                        |
+| `predefinedRanges` | `PredefinedRange[]`   | built-in              | Sidebar shortcut definitions                                                      |
+| `minDate`          | `Date`                | —                     | Minimum selectable date (inclusive)                                               |
+| `maxDate`          | `Date`                | —                     | Maximum selectable date (inclusive)                                               |
+| `position`         | `ConnectedPosition[]` | bottom-start          | CDK Overlay connected positions                                                   |
+| `ariaLabel`        | `string`              | `'Select date range'` | Accessible label for the trigger button                                           |
+| `showApplyButton`  | `boolean`             | `false`               | Show an Apply button inside the overlay that closes it when clicked               |
+| `closeOnSelect`    | `boolean`             | `true`                | Automatically close the overlay after a complete range is selected or pre-defined |
 
 ### Output
 
@@ -99,10 +101,11 @@ export class MyComponent {
 
 ### Public methods
 
-| Method            | Description                                                                         |
-| ----------------- | ----------------------------------------------------------------------------------- |
-| `nextRange()`     | Advance the current range forward by its own duration (e.g. Mon–Sun → next Mon–Sun) |
-| `previousRange()` | Rewind the current range backward by its own duration                               |
+| Method              | Description                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------ |
+| `nextRange()`       | Advance the current range forward by its own duration (e.g. Mon–Sun → next Mon–Sun) |
+| `previousRange()`   | Rewind the current range backward by its own duration                                |
+| `setRange(range, emitEvent?)` | Programmatically set `DateRange \| null`; pass `emitEvent: false` to suppress `rangeChange` and CVA `onChange` |
 
 ### ControlValueAccessor
 
@@ -150,16 +153,18 @@ providers: [
 
 ### `PickerConfig` interface
 
-| Property           | Type                  | Default      | Description                     |
-| ------------------ | --------------------- | ------------ | ------------------------------- |
-| `showTime`         | `boolean`             | `true`       | Show time pickers               |
-| `timeFormat`       | `'12h' \| '24h'`      | `'12h'`      | Hour format                     |
-| `minuteStep`       | `number`              | `1`          | Minute increment step           |
-| `weekStartsOn`     | `0 \| 1`              | `1`          | First day of week               |
-| `predefinedRanges` | `PredefinedRange[]`   | built-in     | Override all shortcuts globally |
-| `minDate`          | `Date`                | —            | Global minimum date             |
-| `maxDate`          | `Date`                | —            | Global maximum date             |
-| `position`         | `ConnectedPosition[]` | bottom-start | CDK overlay positions           |
+| Property           | Type                  | Default      | Description                                                                       |
+| ------------------ | --------------------- | ------------ | --------------------------------------------------------------------------------- |
+| `showTime`         | `boolean`             | `true`       | Show time pickers                                                                 |
+| `timeFormat`       | `'12h' \| '24h'`      | `'12h'`      | Hour format                                                                       |
+| `minuteStep`       | `number`              | `1`          | Minute increment step                                                             |
+| `weekStartsOn`     | `0 \| 1`              | `1`          | First day of week                                                                 |
+| `predefinedRanges` | `PredefinedRange[]`   | built-in     | Override all shortcuts globally                                                   |
+| `minDate`          | `Date`                | —            | Global minimum date                                                               |
+| `maxDate`          | `Date`                | —            | Global maximum date                                                               |
+| `position`         | `ConnectedPosition[]` | bottom-start | CDK overlay positions                                                             |
+| `showApplyButton`  | `boolean`             | `false`      | Show an Apply button inside the overlay that closes it when clicked               |
+| `closeOnSelect`    | `boolean`             | `true`       | Automatically close the overlay after a complete range is selected or pre-defined |
 
 ## Localization — `PICKER_LOCALE`
 
@@ -189,6 +194,7 @@ const ptBrLocale: PickerLocale = {
   startTime: 'Início:',
   endTime: 'Fim:',
   reset: 'Limpar',
+  apply: 'Aplicar',
   placeholder: 'Selecione um período',
   formatRange: (start, end) =>
     `${start.toLocaleDateString('pt-BR')} – ${end.toLocaleDateString('pt-BR')}`,
@@ -208,6 +214,7 @@ providers: [{ provide: PICKER_LOCALE, useValue: ptBrLocale }];
 | `startTime`   | `string`                             | Label above the start time picker             |
 | `endTime`     | `string`                             | Label above the end time picker               |
 | `reset`       | `string`                             | Reset/clear button label                      |
+| `apply`       | `string`                             | Apply button label (used when `showApplyButton` is `true`) |
 | `placeholder` | `string?`                            | Trigger placeholder when no range is selected |
 | `formatRange` | `(start: Date, end: Date) => string` | Formats the trigger display value             |
 
@@ -304,6 +311,7 @@ drs-date-range-picker.light {
 | `--drs-ampm-font-size`     | AM/PM toggle size                 | `0.9375rem`  |
 | `--drs-label-font-size`    | "Start time:" / "End time:" label | `0.8125rem`  |
 | `--drs-trigger-font-size`  | Trigger button text size          | `0.875rem`   |
+| `--drs-apply-font-size`    | Apply button text size            | `0.875rem`   |
 
 ## Exported API surface
 

@@ -22,6 +22,7 @@ export const DEFAULT_PICKER_LOCALE: PickerLocale = {
   startTime: 'Start time:',
   endTime: 'End time:',
   reset: 'Reset',
+  apply: 'Apply',
   placeholder: 'Select a date range',
   formatRange: (start: Date, end: Date) =>
     `${start.toLocaleDateString()} \u2013 ${end.toLocaleDateString()}`,

@@ -4,6 +4,7 @@ import { PICKER_LOCALE } from '../../tokens/locale.token';
 
 @Component({
   selector: 'drs-predefined-ranges',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './predefined-ranges.component.scss',
   template: `

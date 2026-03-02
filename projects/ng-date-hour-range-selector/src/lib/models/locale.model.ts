@@ -26,6 +26,8 @@ export interface PickerLocale {
   endTime: string;
   /** Reset button label */
   reset: string;
+  /** Apply button label */
+  apply: string;
   /** Input placeholder when no range is selected */
   placeholder?: string;
   /** Formats the selected range for display in the trigger input */
