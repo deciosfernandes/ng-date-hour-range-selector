@@ -22,10 +22,10 @@
   "homepage": "https://github.com/deciosfernandes/ng-date-hour-range-selector#readme",
   "license": "MIT",
   "peerDependencies": {
-    "@angular/cdk": "^21.0.0",
-    "@angular/common": "^21.0.0",
-    "@angular/core": "^21.0.0",
-    "@angular/forms": "^21.0.0"
+    "@angular/cdk": ">=19.0.0",
+    "@angular/common": ">=19.0.0",
+    "@angular/core": ">=19.0.0",
+    "@angular/forms": ">=19.0.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

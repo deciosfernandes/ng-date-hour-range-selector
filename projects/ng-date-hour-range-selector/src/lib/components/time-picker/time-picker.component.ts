@@ -10,6 +10,7 @@ export interface TimeValue {
 
 @Component({
   selector: 'drs-time-picker',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './time-picker.component.scss',
   template: `

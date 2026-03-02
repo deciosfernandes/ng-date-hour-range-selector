@@ -34,6 +34,7 @@ const DATE_RANGE_PICKER_VALUE_ACCESSOR: Provider = {
 
 @Component({
   selector: 'drs-date-range-picker',
+  standalone: true,
   imports: [CalendarComponent, TimePickerComponent, PredefinedRangesComponent],
   templateUrl: './date-range-picker.component.html',
   styleUrl: './date-range-picker.component.scss',

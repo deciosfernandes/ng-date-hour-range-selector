@@ -25,8 +25,8 @@ A flexible Angular **date / date-time range selector** built on Angular CDK Over
 
 | Dependency     | Version   |
 | -------------- | --------- |
-| Angular        | `^21.0.0` |
-| `@angular/cdk` | `^21.0.0` |
+| Angular        | `>=19.0.0` |
+| `@angular/cdk` | `>=19.0.0` |
 
 ## Installation
 
