@@ -1,8 +1,6 @@
 {
   "name": "ng-date-hour-range-selector",
-  "author": {
-    "name": "Décio Fernandes"
-  },
+  "author": "Decio Fernandes",
   "version": "1.0.0",
   "description": "Flexible Angular date / date-time range selector with CDK overlay, predefined ranges, localization, and full CSS customization.",
   "keywords": [
@@ -14,6 +12,14 @@
     "cdk",
     "range-picker"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deciosfernandes/ng-date-hour-range-selector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/deciosfernandes/ng-date-hour-range-selector/issues"
+  },
+  "homepage": "https://github.com/deciosfernandes/ng-date-hour-range-selector#readme",
   "license": "MIT",
   "peerDependencies": {
     "@angular/cdk": "^21.0.0",
