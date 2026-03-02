@@ -68,6 +68,8 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnDestroy
   position = input<ConnectedPosition[] | undefined>(undefined);
   showResetButton = input<boolean | undefined>(undefined);
   calendarIcon = input<'left' | 'right' | 'hidden' | undefined>(undefined);
+  showApplyButton = input<boolean | undefined>(undefined);
+  closeOnSelect = input<boolean | undefined>(undefined);
   /** Accessible label for the trigger button */
   ariaLabel = input<string>('Select date range');
 
@@ -124,6 +126,8 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnDestroy
         | 'left'
         | 'right'
         | 'hidden',
+      showApplyButton: this.showApplyButton() ?? g.showApplyButton ?? false,
+      closeOnSelect: this.closeOnSelect() ?? g.closeOnSelect ?? true,
     };
   });
 
@@ -259,6 +263,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnDestroy
     this.rangeEnd.set(newEnd);
     this.activeRangeLabel.set(null);
     this.commitValue({ start: newStart, end: newEnd });
+    if (this.resolvedConfig().closeOnSelect) this.close();
   }
 
   // ─── Predefined ranges ────────────────────────────────────────────────────
@@ -270,6 +275,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnDestroy
     this._viewYear.set(dr.start.getFullYear());
     this._viewMonth.set(dr.start.getMonth());
     this.commitValue(dr);
+    if (this.resolvedConfig().closeOnSelect) this.close();
   }
 
   protected onReset(): void {
@@ -314,6 +320,10 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnDestroy
     if (start) this.commitValue({ start, end: updated });
   }
 
+  protected onApply(): void {
+    this.close();
+  }
+
   // ─── Public API ───────────────────────────────────────────────────────────
   /**
    * Advance the current range forward by one "step" (equal to the range's length).
@@ -337,6 +347,18 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnDestroy
     const cfg = this.resolvedConfig();
     const prev = this.dateUtils.advanceRange(current, -1, cfg.minDate, cfg.maxDate);
     this.applyRange(prev);
+  }
+
+  /**
+   * Programmatically set the selected range and emit rangeChange.
+   * Passing `null` clears the selection.
+   */
+  setRange(range: DateRange | null): void {
+    if (range) {
+      this.applyRange(range);
+    } else {
+      this.onReset();
+    }
   }
 
   // ─── ControlValueAccessor ─────────────────────────────────────────────────

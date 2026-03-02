@@ -140,6 +140,43 @@
   letter-spacing: 0.01em;
 }
 
+/* ─── Apply button ───────────────────────────────────────────────────────── */
+
+.drs-apply-row {
+  margin-top: auto;
+  padding-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+
+  &--inline {
+    border-top: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+    padding: 12px 20px;
+    margin-top: 0;
+  }
+}
+
+.drs-apply-btn {
+  padding: 6px 18px;
+  background: var(--drs-primary, #f97316);
+  color: var(--drs-primary-fg, #ffffff);
+  border: none;
+  border-radius: var(--drs-radius-sm, 5px);
+  font-family: var(--drs-font-family, inherit);
+  font-size: var(--drs-apply-font-size, 0.875rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--drs-primary, #f97316);
+  }
+}
+
 /* ─── Responsive / mobile ──────────────────────────────────────────────────
    Below 640 px the panel stacks vertically:
      • predefined-range sidebar → horizontal scrollable strip at the top

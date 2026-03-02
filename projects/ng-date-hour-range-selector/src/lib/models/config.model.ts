@@ -25,4 +25,8 @@ export interface PickerConfig {
   showResetButton?: boolean;
   /** Position of the calendar icon inside the trigger button, or hide it. Default: 'right' */
   calendarIcon?: 'left' | 'right' | 'hidden';
+  /** Show an Apply button that closes the picker when clicked. Default: false */
+  showApplyButton?: boolean;
+  /** Automatically close the picker after a complete range is selected. Default: true */
+  closeOnSelect?: boolean;
 }

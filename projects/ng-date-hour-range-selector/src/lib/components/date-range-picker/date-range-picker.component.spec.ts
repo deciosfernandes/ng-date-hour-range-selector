@@ -388,6 +388,122 @@ describe('DateRangePickerComponent', () => {
       expect(cfg.showTime).toBe(false);
       expect(cfg.timeFormat).toBe('24h');
     });
+
+    it('closeOnSelect defaults to true', () => {
+      expect(component['resolvedConfig']().closeOnSelect).toBe(true);
+    });
+
+    it('showApplyButton defaults to false', () => {
+      expect(component['resolvedConfig']().showApplyButton).toBe(false);
+    });
+
+    it('closeOnSelect can be overridden via input', () => {
+      fixture.componentRef.setInput('closeOnSelect', false);
+      fixture.detectChanges();
+      expect(component['resolvedConfig']().closeOnSelect).toBe(false);
+    });
+
+    it('showApplyButton can be overridden via input', () => {
+      fixture.componentRef.setInput('showApplyButton', true);
+      fixture.detectChanges();
+      expect(component['resolvedConfig']().showApplyButton).toBe(true);
+    });
+  });
+
+  // ─── closeOnSelect ─────────────────────────────────────────────────────
+
+  describe('closeOnSelect', () => {
+    it('closes the picker after range is committed when closeOnSelect is true', () => {
+      fixture.componentRef.setInput('closeOnSelect', true);
+      fixture.detectChanges();
+
+      // Open the picker
+      component['open']();
+      expect(component['isOpen']()).toBe(true);
+
+      component['onDateSelect'](new Date(2024, 0, 5));
+      component['onDateSelect'](new Date(2024, 0, 10));
+
+      expect(component['isOpen']()).toBe(false);
+    });
+
+    it('does not close picker after range committed when closeOnSelect is false', () => {
+      fixture.componentRef.setInput('closeOnSelect', false);
+      fixture.detectChanges();
+
+      component['open']();
+      expect(component['isOpen']()).toBe(true);
+
+      component['onDateSelect'](new Date(2024, 0, 5));
+      component['onDateSelect'](new Date(2024, 0, 10));
+
+      expect(component['isOpen']()).toBe(true);
+    });
+
+    it('closes picker after predefined range is selected when closeOnSelect is true', () => {
+      fixture.componentRef.setInput('closeOnSelect', true);
+      fixture.detectChanges();
+
+      component['open']();
+      expect(component['isOpen']()).toBe(true);
+
+      component['onRangeSelect']({
+        label: 'Today',
+        range: () => ({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 1, 23, 59) }),
+      });
+
+      expect(component['isOpen']()).toBe(false);
+    });
+  });
+
+  // ─── setRange ──────────────────────────────────────────────────────────
+
+  describe('setRange', () => {
+    it('sets the range and emits rangeChange', () => {
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      const range: DateRange = { start: new Date(2024, 3, 1), end: new Date(2024, 3, 30) };
+      component.setRange(range);
+
+      expect(component.value()?.start.getMonth()).toBe(3);
+      expect(component.value()?.end.getDate()).toBe(30);
+      expect(emitted.length).toBe(1);
+      expect((emitted[0] as DateRange).start.getMonth()).toBe(3);
+    });
+
+    it('clears the range when called with null and emits null', () => {
+      component.writeValue({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 31) });
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component.setRange(null);
+
+      expect(component.value()).toBeNull();
+      expect(emitted.length).toBe(1);
+      expect(emitted[0]).toBeNull();
+    });
+
+    it('updates the calendar view month/year to match the new range', () => {
+      component.setRange({ start: new Date(2025, 7, 1), end: new Date(2025, 7, 31) });
+
+      expect(component['viewYear']()).toBe(2025);
+      expect(component['viewMonth']()).toBe(7);
+    });
+  });
+
+  // ─── onApply ───────────────────────────────────────────────────────────
+
+  describe('onApply', () => {
+    it('closes the picker', () => {
+      component['open']();
+      expect(component['isOpen']()).toBe(true);
+
+      component['onApply']();
+
+      expect(component['isOpen']()).toBe(false);
+    });
   });
 
   // ─── displayValue ──────────────────────────────────────────────────────
