@@ -7,6 +7,7 @@
     "build": "ng build ng-date-hour-range-selector && ng build demo",
     "build:lib": "ng build ng-date-hour-range-selector",
     "build:demo": "ng build demo",
+    "build:ghpages": "ng build ng-date-hour-range-selector && ng build demo --base-href /ng-date-hour-range-selector/",
     "watch": "ng build ng-date-hour-range-selector --watch --configuration development",
     "test": "ng test"
   },
