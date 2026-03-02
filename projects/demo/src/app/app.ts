@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { DateRange, DateRangePickerComponent } from 'ng-date-hour-range-selector';
+import { DateRange, DateRangePickerComponent, PredefinedRange } from 'ng-date-hour-range-selector';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +15,42 @@ export class App {
   readonly lastEmitted = signal<DateRange | null>(null);
 
   private readonly picker = viewChild(DateRangePickerComponent);
+
+  // Min / max boundaries: restrict to current month only
+  private readonly _now = new Date();
+  readonly minDate = new Date(this._now.getFullYear(), this._now.getMonth(), 1);
+  readonly maxDate = new Date(this._now.getFullYear(), this._now.getMonth() + 1, 0);
+
+  // Custom predefined ranges (forward-looking)
+  readonly customRanges: PredefinedRange[] = [
+    {
+      label: 'Next 7 days',
+      range: () => {
+        const start = new Date();
+        const end = new Date();
+        end.setDate(end.getDate() + 6);
+        return { start, end };
+      },
+    },
+    {
+      label: 'Next 30 days',
+      range: () => {
+        const start = new Date();
+        const end = new Date();
+        end.setDate(end.getDate() + 29);
+        return { start, end };
+      },
+    },
+    {
+      label: 'Next quarter',
+      range: () => {
+        const start = new Date();
+        const end = new Date();
+        end.setDate(end.getDate() + 89);
+        return { start, end };
+      },
+    },
+  ];
 
   onRangeChange(range: DateRange | null): void {
     this.lastEmitted.set(range);

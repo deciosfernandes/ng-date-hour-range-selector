@@ -4,6 +4,7 @@
     <p class="demo-subtitle">Angular date &amp; time range picker with CDK overlay</p>
   </header>
 
+  <!-- ─── 1. Reactive form binding ────────────────────────────────────── -->
   <section class="demo-section">
     <h2>reactive form binding</h2>
     <div class="demo-row">
@@ -14,8 +15,12 @@
       />
 
       <div class="demo-nav-btns">
-        <button class="demo-btn" type="button" (click)="previous()" title="Previous range">&#8592; Previous</button>
-        <button class="demo-btn" type="button" (click)="next()" title="Next range">Next &#8594;</button>
+        <button class="demo-btn" type="button" (click)="previous()" title="Previous range">
+          &#8592; Previous
+        </button>
+        <button class="demo-btn" type="button" (click)="next()" title="Next range">
+          Next &#8594;
+        </button>
       </div>
     </div>
 
@@ -23,26 +28,141 @@
       <div class="demo-output">
         <strong>Selected range:</strong><br />
         Start: {{ range.start | date: 'medium' }}<br />
-        End:   {{ range.end   | date: 'medium' }}
+        End: {{ range.end | date: 'medium' }}
       </div>
     }
+
+    <pre class="demo-code"><code>&lt;drs-date-range-picker
+  [formControl]="rangeControl"
+  (rangeChange)="onRangeChange($event)"
+  ariaLabel="Demo date range"
+/&gt;</code></pre>
   </section>
 
+  <!-- ─── 2. Date-only, custom accent ─────────────────────────────────── -->
   <section class="demo-section">
-    <h2>no time, 24-hour, custom accent</h2>
+    <h2>date-only · custom blue accent</h2>
     <drs-date-range-picker
       [showTime]="false"
-      style="--drs-primary: #3b82f6;"
+      style="--drs-primary: #3b82f6"
       ariaLabel="Date-only picker"
     />
+    <pre class="demo-code"><code>&lt;drs-date-range-picker
+  [showTime]="false"
+  style="--drs-primary: #3b82f6;"
+/&gt;</code></pre>
   </section>
 
+  <!-- ─── 3. 24h clock, week starts Sunday ────────────────────────────── -->
   <section class="demo-section">
-    <h2>24-hour, monday start</h2>
+    <h2>24h clock · week starts sunday</h2>
     <drs-date-range-picker
       timeFormat="24h"
       [weekStartsOn]="0"
-      ariaLabel="24h picker"
+      ariaLabel="24h picker, week starts Sunday"
     />
+    <pre class="demo-code"><code>&lt;drs-date-range-picker
+  timeFormat="24h"
+  [weekStartsOn]="0"
+/&gt;
+
+&lt;!-- weekStartsOn: 0 = Sunday · 1 = Monday (default) --&gt;</code></pre>
+  </section>
+
+  <!-- ─── 4. 12h format · 15-minute step ──────────────────────────────── -->
+  <section class="demo-section">
+    <h2>12h format · 15-minute steps</h2>
+    <drs-date-range-picker
+      timeFormat="12h"
+      [minuteStep]="15"
+      ariaLabel="12h format, 15-minute step picker"
+    />
+    <pre class="demo-code"><code>&lt;drs-date-range-picker
+  timeFormat="12h"
+  [minuteStep]="15"
+/&gt;
+
+&lt;!-- timeFormat: '12h' shows AM/PM selector
+     minuteStep: minutes jump by 15 instead of 1 --&gt;</code></pre>
+  </section>
+
+  <!-- ─── 5. Custom predefined ranges ─────────────────────────────────── -->
+  <section class="demo-section">
+    <h2>custom predefined ranges</h2>
+    <drs-date-range-picker
+      [predefinedRanges]="customRanges"
+      ariaLabel="Custom predefined ranges picker"
+    />
+    <pre class="demo-code"><code>// component.ts
+readonly customRanges: PredefinedRange[] = [
+  &#123;
+    label: 'Next 7 days',
+    range: () => &#123;
+      const start = new Date();
+      const end = new Date();
+      end.setDate(end.getDate() + 6);
+      return &#123; start, end &#125;;
+    &#125;,
+  &#125;,
+  &#123; label: 'Next 30 days', range: () => &#123; /* ... */ &#125; &#125;,
+  &#123; label: 'Next quarter',  range: () => &#123; /* ... */ &#125; &#125;,
+];
+
+&lt;!-- template --&gt;
+&lt;drs-date-range-picker
+  [predefinedRanges]="customRanges"
+/&gt;</code></pre>
+  </section>
+
+  <!-- ─── 6. Min / max date boundaries ────────────────────────────────── -->
+  <section class="demo-section">
+    <h2>min / max date boundaries · current month only</h2>
+    <drs-date-range-picker
+      [minDate]="minDate"
+      [maxDate]="maxDate"
+      ariaLabel="Bounded date range picker"
+    />
+    <pre class="demo-code"><code>// component.ts — restrict to current month
+private readonly _now = new Date();
+readonly minDate = new Date(this._now.getFullYear(), this._now.getMonth(), 1);
+readonly maxDate = new Date(this._now.getFullYear(), this._now.getMonth() + 1, 0);
+
+&lt;!-- template --&gt;
+&lt;drs-date-range-picker
+  [minDate]="minDate"
+  [maxDate]="maxDate"
+/&gt;</code></pre>
+  </section>
+
+  <!-- ─── 7. No reset button · icon on left ───────────────────────────── -->
+  <section class="demo-section">
+    <h2>no reset button · icon on left</h2>
+    <drs-date-range-picker
+      [showResetButton]="false"
+      calendarIcon="left"
+      ariaLabel="Picker with icon on left, no reset"
+    />
+    <pre class="demo-code"><code>&lt;drs-date-range-picker
+  [showResetButton]="false"
+  calendarIcon="left"
+/&gt;
+
+&lt;!-- calendarIcon: 'left' | 'right' (default) | 'hidden' --&gt;</code></pre>
+  </section>
+
+  <!-- ─── 8. Hidden icon · green theme ────────────────────────────────── -->
+  <section class="demo-section">
+    <h2>hidden icon · green theme</h2>
+    <drs-date-range-picker
+      calendarIcon="hidden"
+      style="--drs-primary: #22c55e"
+      ariaLabel="Green themed picker, hidden icon"
+    />
+    <pre class="demo-code"><code>&lt;drs-date-range-picker
+  calendarIcon="hidden"
+  style="--drs-primary: #22c55e;"
+/&gt;
+
+&lt;!-- Override --drs-primary to re-theme the entire picker --&gt;</code></pre>
   </section>
 </main>

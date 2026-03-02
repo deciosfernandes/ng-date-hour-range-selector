@@ -1,6 +1,11 @@
 # ng-date-hour-range-selector
 
+[![Live Demo](https://img.shields.io/badge/demo-live-orange?style=flat-square)](https://deciosfernandes.github.io/ng-date-hour-range-selector/)
+[![npm](https://img.shields.io/npm/v/ng-date-hour-range-selector?style=flat-square)](https://www.npmjs.com/package/ng-date-hour-range-selector)
+
 A flexible Angular **date / date-time range selector** built on Angular CDK Overlay. Supports predefined range shortcuts, time picking, localization, and full CSS customization — with zero third-party date-library dependency.
+
+**[→ Live Demo](https://deciosfernandes.github.io/ng-date-hour-range-selector/)**
 
 ## Features
 
