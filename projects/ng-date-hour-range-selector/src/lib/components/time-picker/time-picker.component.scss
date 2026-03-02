@@ -91,3 +91,40 @@
     border-radius: var(--drs-radius-sm, 4px);
   }
 }
+
+/* ─── Mobile / touch ────────────────────────────────────────────────────────
+   Enlarge interactive targets to ≥ 44 × 44 px (WCAG 2.5.5) on small screens.
+ * -------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .drs-time {
+    padding: 14px 12px;
+    gap: 8px;
+  }
+
+  .drs-time__btn {
+    /* Minimum 44 × 44 px touch target */
+    width: 44px;
+    height: 44px;
+    font-size: 1.125rem;
+  }
+
+  .drs-time__value {
+    font-size: calc(var(--drs-time-font-size, 1.375rem) * 1.1);
+    min-width: 2.5ch;
+  }
+
+  .drs-time__sep {
+    font-size: calc(var(--drs-time-font-size, 1.375rem) * 1.1);
+  }
+
+  .drs-time__ampm {
+    margin-left: 10px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--drs-ampm-font-size, 0.9375rem);
+  }
+}

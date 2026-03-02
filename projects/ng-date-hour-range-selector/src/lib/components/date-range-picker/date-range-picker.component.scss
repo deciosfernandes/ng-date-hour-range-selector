@@ -139,3 +139,64 @@
   color: var(--drs-text, #ffffff);
   letter-spacing: 0.01em;
 }
+
+/* ─── Responsive / mobile ──────────────────────────────────────────────────
+   Below 640 px the panel stacks vertically:
+     • predefined-range sidebar → horizontal scrollable strip at the top
+     • calendar → full-width
+     • time pickers → side-by-side row at the bottom
+ * -------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  /* Allow the overlay to fill the viewport width with a sensible max */
+  .drs-overlay__panel {
+    flex-direction: column;
+    max-width: calc(100vw - 24px);
+    max-height: 90dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Sidebar becomes a horizontal scrollable chip strip */
+  .drs-overlay__sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+    padding: 10px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Hide scrollbar but keep it functional */
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  /* Calendar fills available width */
+  .drs-overlay__calendar {
+    padding: 12px 16px;
+    overflow-x: auto;
+  }
+
+  /* Time pickers sit side-by-side below the calendar */
+  .drs-overlay__times {
+    flex-direction: row;
+    border-left: none;
+    border-top: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+    gap: 12px;
+    padding: 14px 16px;
+    min-width: unset;
+  }
+
+  .drs-time-section {
+    flex: 1;
+    align-items: center;
+  }
+
+  /* Trigger stretches to full host width on small screens */
+  .drs-picker__trigger {
+    width: 100%;
+    min-width: unset;
+    box-sizing: border-box;
+  }
+}

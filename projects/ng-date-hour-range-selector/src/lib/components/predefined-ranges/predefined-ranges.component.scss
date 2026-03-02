@@ -23,6 +23,46 @@
   gap: 0;
 }
 
+/* ─── Mobile: horizontal scrollable strip ───────────────────────────────────
+   When the overlay stacks vertically the sidebar becomes a horizontal row.
+ * -------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  :host {
+    width: auto;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .drs-prd {
+    flex-direction: row;
+    align-items: center;
+    width: max-content;
+    height: auto;
+    padding: 0 8px;
+    gap: 4px;
+  }
+
+  .drs-prd__list {
+    flex-direction: row;
+    flex: unset;
+  }
+
+  .drs-prd__btn {
+    white-space: nowrap;
+    min-height: 36px;
+    padding: 6px 12px;
+  }
+
+  .drs-prd__reset {
+    margin-top: 0;
+    margin-left: 4px;
+    white-space: nowrap;
+    min-height: 36px;
+    padding: 6px 12px;
+  }
+}
+
 .drs-prd__item {
   display: block;
 }
