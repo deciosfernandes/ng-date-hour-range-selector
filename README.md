@@ -7,26 +7,37 @@ A flexible Angular **date / date-time range selector** built on Angular CDK Over
 
 **[→ Live Demo](https://deciosfernandes.github.io/ng-date-hour-range-selector/)**
 
+---
+
 ## Features
 
 - Date **and** time range selection, or date-only mode
 - 12-hour (AM/PM) and 24-hour time formats
 - Configurable minute step
 - Sidebar with predefined range shortcuts (Today, Yesterday, This/Last Week…)
-- Works as a `ControlValueAccessor` — drop into any reactive form
+- Configurable calendar icon position (`left`, `right`, or hidden)
+- Optional reset button in the sidebar
+- Works as a `ControlValueAccessor` — drop into any reactive or template-driven form
 - Fully localizable via the `PICKER_LOCALE` injection token
+- Pre-select a range on load via the `initialRange` input
+- `nextRange()` / `previousRange()` / `setRange()` public API methods
 - No third-party date library required
 - Built on Angular CDK Overlay
 - Standalone components — no NgModule needed
+- A directive variant (`drsDateRangePicker`) to attach the picker to any `<input>`
 - Accessible: keyboard navigation, ARIA attributes, meets WCAG AA
 - Dark theme included; fully themeable via CSS custom properties
 
+---
+
 ## Requirements
 
-| Dependency     | Version   |
-| -------------- | --------- |
+| Dependency     | Version    |
+| -------------- | ---------- |
 | Angular        | `>=19.0.0` |
 | `@angular/cdk` | `>=19.0.0` |
+
+---
 
 ## Installation
 
@@ -37,7 +48,7 @@ npm install ng-date-hour-range-selector @angular/cdk
 Import the built-in dark theme once in your global styles:
 
 ```scss
-@import 'ng-date-hour-range-selector/styles/theme';
+@use 'ng-date-hour-range-selector/styles/theme';
 ```
 
 Add `provideAnimationsAsync()` to your application config:
@@ -50,7 +61,11 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
+---
+
 ## Quick start
+
+### Component (`<drs-date-range-picker>`)
 
 ```ts
 import { DateRange, DateRangePickerComponent } from 'ng-date-hour-range-selector';
@@ -75,23 +90,56 @@ export class MyComponent {
 }
 ```
 
+### Directive (`[drsDateRangePicker]`)
+
+Attach the picker to any `<input>` element:
+
+```ts
+import { DateRangePickerDirective } from 'ng-date-hour-range-selector';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+
+@Component({
+  imports: [ReactiveFormsModule, DateRangePickerDirective],
+  template: `
+    <input
+      drsDateRangePicker
+      [formControl]="rangeControl"
+      (rangeChange)="onRangeChange($event)"
+      ariaLabel="Select date range"
+    />
+  `,
+})
+export class MyComponent {
+  readonly rangeControl = new FormControl<DateRange | null>(null);
+
+  onRangeChange(range: DateRange | null): void {
+    console.log(range?.start, range?.end);
+  }
+}
+```
+
+---
+
 ## Component API — `<drs-date-range-picker>`
 
 ### Inputs
 
-| Input              | Type                  | Default               | Description                                                                       |
-| ------------------ | --------------------- | --------------------- | --------------------------------------------------------------------------------- |
-| `showTime`         | `boolean`             | `true`                | Show the time-picker section                                                      |
-| `timeFormat`       | `'12h' \| '24h'`      | `'12h'`               | 12-hour (AM/PM) or 24-hour format                                                 |
-| `minuteStep`       | `number`              | `1`                   | Minute increment step                                                             |
-| `weekStartsOn`     | `0 \| 1`              | `1`                   | First day of week — `0` Sunday, `1` Monday                                        |
-| `predefinedRanges` | `PredefinedRange[]`   | built-in              | Sidebar shortcut definitions                                                      |
-| `minDate`          | `Date`                | —                     | Minimum selectable date (inclusive)                                               |
-| `maxDate`          | `Date`                | —                     | Maximum selectable date (inclusive)                                               |
-| `position`         | `ConnectedPosition[]` | bottom-start          | CDK Overlay connected positions                                                   |
-| `ariaLabel`        | `string`              | `'Select date range'` | Accessible label for the trigger button                                           |
-| `showApplyButton`  | `boolean`             | `false`               | Show an Apply button inside the overlay that closes it when clicked               |
-| `closeOnSelect`    | `boolean`             | `true`                | Automatically close the overlay after a complete range is selected or pre-defined |
+| Input              | Type                            | Default               | Description                                                                       |
+| ------------------ | ------------------------------- | --------------------- | --------------------------------------------------------------------------------- |
+| `showTime`         | `boolean`                       | `true`                | Show the time-picker section                                                      |
+| `timeFormat`       | `'12h' \| '24h'`                | `'24h'`               | 12-hour (AM/PM) or 24-hour format                                                 |
+| `minuteStep`       | `number`                        | `1`                   | Minute increment step                                                             |
+| `weekStartsOn`     | `0 \| 1`                        | `1`                   | First day of week — `0` Sunday, `1` Monday                                        |
+| `predefinedRanges` | `PredefinedRange[]`             | built-in              | Sidebar shortcut definitions                                                      |
+| `minDate`          | `Date`                          | —                     | Minimum selectable date (inclusive)                                               |
+| `maxDate`          | `Date`                          | —                     | Maximum selectable date (inclusive)                                               |
+| `position`         | `ConnectedPosition[]`           | bottom-start          | CDK Overlay connected positions                                                   |
+| `showResetButton`  | `boolean`                       | `true`                | Show or hide the reset button in the sidebar                                      |
+| `calendarIcon`     | `'left' \| 'right' \| 'hidden'` | `'right'`             | Position of the calendar icon in the trigger button, or hide it                   |
+| `showApplyButton`  | `boolean`                       | `false`               | Show an Apply button inside the overlay that closes it when clicked               |
+| `closeOnSelect`    | `boolean`                       | `true`                | Automatically close the overlay after a complete range is selected or pre-defined |
+| `initialRange`     | `DateRange \| PredefinedRange`  | —                     | Range or predefined-range factory to pre-select on component load                 |
+| `ariaLabel`        | `string`                        | `'Select date range'` | Accessible label for the trigger button                                           |
 
 ### Output
 
@@ -101,10 +149,10 @@ export class MyComponent {
 
 ### Public methods
 
-| Method              | Description                                                                          |
-| ------------------- | ------------------------------------------------------------------------------------ |
-| `nextRange()`       | Advance the current range forward by its own duration (e.g. Mon–Sun → next Mon–Sun) |
-| `previousRange()`   | Rewind the current range backward by its own duration                                |
+| Method                        | Description                                                                                                    |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `nextRange()`                 | Advance the current range forward by its own duration (e.g. Mon–Sun → next Mon–Sun)                            |
+| `previousRange()`             | Rewind the current range backward by its own duration                                                          |
 | `setRange(range, emitEvent?)` | Programmatically set `DateRange \| null`; pass `emitEvent: false` to suppress `rangeChange` and CVA `onChange` |
 
 ### ControlValueAccessor
@@ -118,6 +166,18 @@ export class MyComponent {
 <!-- Template-driven -->
 <drs-date-range-picker [(ngModel)]="range" />
 ```
+
+---
+
+## Directive API — `[drsDateRangePicker]`
+
+The directive exposes the **same inputs and output** as the component, **except** `calendarIcon` (which is specific to the component's trigger button).
+
+```html
+<input drsDateRangePicker [formControl]="ctrl" [showTime]="false" />
+```
+
+---
 
 ## Models
 
@@ -135,6 +195,8 @@ interface PredefinedRange {
 }
 ```
 
+---
+
 ## Global configuration — `PICKER_CONFIG`
 
 Override defaults for every picker in your application (or a specific feature):
@@ -146,25 +208,31 @@ import { PICKER_CONFIG } from 'ng-date-hour-range-selector';
 providers: [
   {
     provide: PICKER_CONFIG,
-    useValue: { showTime: false, timeFormat: '24h', weekStartsOn: 0 },
+    useValue: { showTime: false, timeFormat: '12h', weekStartsOn: 0 },
   },
 ];
 ```
 
+Individual component/directive inputs always take precedence over the global config.
+
 ### `PickerConfig` interface
 
-| Property           | Type                  | Default      | Description                                                                       |
-| ------------------ | --------------------- | ------------ | --------------------------------------------------------------------------------- |
-| `showTime`         | `boolean`             | `true`       | Show time pickers                                                                 |
-| `timeFormat`       | `'12h' \| '24h'`      | `'12h'`      | Hour format                                                                       |
-| `minuteStep`       | `number`              | `1`          | Minute increment step                                                             |
-| `weekStartsOn`     | `0 \| 1`              | `1`          | First day of week                                                                 |
-| `predefinedRanges` | `PredefinedRange[]`   | built-in     | Override all shortcuts globally                                                   |
-| `minDate`          | `Date`                | —            | Global minimum date                                                               |
-| `maxDate`          | `Date`                | —            | Global maximum date                                                               |
-| `position`         | `ConnectedPosition[]` | bottom-start | CDK overlay positions                                                             |
-| `showApplyButton`  | `boolean`             | `false`      | Show an Apply button inside the overlay that closes it when clicked               |
-| `closeOnSelect`    | `boolean`             | `true`       | Automatically close the overlay after a complete range is selected or pre-defined |
+| Property           | Type                            | Default      | Description                                                                       |
+| ------------------ | ------------------------------- | ------------ | --------------------------------------------------------------------------------- |
+| `showTime`         | `boolean`                       | `true`       | Show the time-picker section                                                      |
+| `timeFormat`       | `'12h' \| '24h'`                | `'24h'`      | Hour format                                                                       |
+| `minuteStep`       | `number`                        | `1`          | Minute increment step                                                             |
+| `weekStartsOn`     | `0 \| 1`                        | `1`          | First day of week                                                                 |
+| `predefinedRanges` | `PredefinedRange[]`             | built-in     | Override all shortcuts globally                                                   |
+| `minDate`          | `Date`                          | —            | Global minimum date                                                               |
+| `maxDate`          | `Date`                          | —            | Global maximum date                                                               |
+| `position`         | `ConnectedPosition[]`           | bottom-start | CDK overlay positions                                                             |
+| `showResetButton`  | `boolean`                       | `true`       | Show or hide the reset button                                                     |
+| `calendarIcon`     | `'left' \| 'right' \| 'hidden'` | `'right'`    | Calendar icon position in the trigger button                                      |
+| `showApplyButton`  | `boolean`                       | `false`      | Show an Apply button inside the overlay                                           |
+| `closeOnSelect`    | `boolean`                       | `true`       | Automatically close the overlay after a complete range is selected or pre-defined |
+
+---
 
 ## Localization — `PICKER_LOCALE`
 
@@ -198,25 +266,35 @@ const ptBrLocale: PickerLocale = {
   placeholder: 'Selecione um período',
   formatRange: (start, end) =>
     `${start.toLocaleDateString('pt-BR')} – ${end.toLocaleDateString('pt-BR')}`,
+  formatRangeWithTime: (start, end) => {
+    const fmt = (d: Date) =>
+      `${d.toLocaleDateString('pt-BR')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `${fmt(start)} – ${fmt(end)}`;
+  },
 };
 
 providers: [{ provide: PICKER_LOCALE, useValue: ptBrLocale }];
 ```
 
+> `formatRangeWithTime` is optional. When `showTime` is `true` and it is provided, the trigger will include times in the display value. Falls back to `formatRange` if omitted.
+
 ### `PickerLocale` interface
 
-| Property      | Type                                 | Description                                   |
-| ------------- | ------------------------------------ | --------------------------------------------- |
-| `daysOfWeek`  | `[string × 7]`                       | Abbreviated day labels — Sunday first         |
-| `monthNames`  | `[string × 12]`                      | Full month names — January first              |
-| `am`          | `string`                             | AM toggle label                               |
-| `pm`          | `string`                             | PM toggle label                               |
-| `startTime`   | `string`                             | Label above the start time picker             |
-| `endTime`     | `string`                             | Label above the end time picker               |
-| `reset`       | `string`                             | Reset/clear button label                      |
-| `apply`       | `string`                             | Apply button label (used when `showApplyButton` is `true`) |
-| `placeholder` | `string?`                            | Trigger placeholder when no range is selected |
-| `formatRange` | `(start: Date, end: Date) => string` | Formats the trigger display value             |
+| Property              | Type                                 | Description                                                              |
+| --------------------- | ------------------------------------ | ------------------------------------------------------------------------ |
+| `daysOfWeek`          | `[string × 7]`                       | Abbreviated day labels — Sunday first                                    |
+| `monthNames`          | `[string × 12]`                      | Full month names — January first                                         |
+| `am`                  | `string`                             | AM toggle label                                                          |
+| `pm`                  | `string`                             | PM toggle label                                                          |
+| `startTime`           | `string`                             | Label above the start time picker                                        |
+| `endTime`             | `string`                             | Label above the end time picker                                          |
+| `reset`               | `string`                             | Reset/clear button label                                                 |
+| `apply`               | `string`                             | Apply button label (used when `showApplyButton` is `true`)               |
+| `placeholder`         | `string?`                            | Trigger placeholder when no range is selected                            |
+| `formatRange`         | `(start: Date, end: Date) => string` | Formats the selected range for display in the trigger                    |
+| `formatRangeWithTime` | `(start: Date, end: Date) => string` | Formats the range including time; falls back to `formatRange` if omitted |
+
+---
 
 ## Predefined ranges
 
@@ -240,6 +318,8 @@ const customRanges: PredefinedRange[] = [
       const end = new Date();
       const start = new Date();
       start.setDate(start.getDate() - 6);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 0);
       return { start, end };
     },
   },
@@ -249,6 +329,8 @@ const customRanges: PredefinedRange[] = [
       const end = new Date();
       const start = new Date();
       start.setDate(start.getDate() - 29);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 0);
       return { start, end };
     },
   },
@@ -256,22 +338,79 @@ const customRanges: PredefinedRange[] = [
 ```
 
 ```html
-<drs-date-range-picker [predefinedRanges]="customRanges" ariaLabel="Custom ranges" />
+<drs-date-range-picker [predefinedRanges]="customRanges" />
 ```
+
+---
+
+## Examples
+
+### Date-only picker
+
+```html
+<drs-date-range-picker [showTime]="false" />
+```
+
+### 12-hour format, Sunday start
+
+```html
+<drs-date-range-picker timeFormat="12h" [weekStartsOn]="0" />
+```
+
+### Calendar icon on the left, no reset button
+
+```html
+<drs-date-range-picker calendarIcon="left" [showResetButton]="false" />
+```
+
+### Pre-selected range on load
+
+```ts
+readonly initialRange: PredefinedRange = {
+  label: 'Last 7 days',
+  range: () => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 6);
+    return { start, end };
+  },
+};
+```
+
+```html
+<drs-date-range-picker [initialRange]="initialRange" />
+```
+
+### Navigate range programmatically
+
+```ts
+private picker = viewChild(DateRangePickerComponent);
+
+next(): void { this.picker()?.nextRange(); }
+prev(): void { this.picker()?.previousRange(); }
+```
+
+### Directive on a plain input
+
+```html
+<input drsDateRangePicker [formControl]="ctrl" [showTime]="false" />
+```
+
+---
 
 ## Theming — CSS custom properties
 
 Import the built-in dark theme and override variables at `:root` or on specific elements:
 
 ```scss
-@import 'ng-date-hour-range-selector/styles/theme';
+@use 'ng-date-hour-range-selector/styles/theme';
 
 // Global accent colour
 :root {
   --drs-primary: #3b82f6;
 }
 
-// Light theme on one picker instance
+// Light theme override
 drs-date-range-picker.light {
   --drs-bg: #ffffff;
   --drs-text: #111111;
@@ -281,61 +420,74 @@ drs-date-range-picker.light {
 }
 ```
 
+You can also use the `style` attribute inline:
+
+```html
+<drs-date-range-picker style="--drs-primary: #8b5cf6;" />
+```
+
 ### Full variable reference
 
-| Variable                   | Description                       | Default      |
-| -------------------------- | --------------------------------- | ------------ |
-| `--drs-radius`             | Overlay panel border radius       | `10px`       |
-| `--drs-radius-sm`          | Button border radius              | `5px`        |
-| `--drs-sidebar-width`      | Predefined-ranges sidebar width   | `148px`      |
-| `--drs-overlay-z`          | z-index of the overlay panel      | `1000`       |
-| `--drs-shadow`             | Overlay panel box shadow          | dark shadow  |
-| `--drs-bg`                 | Overlay / modal background        | `#1e1f22`    |
-| `--drs-trigger-bg`         | Trigger button background         | `--drs-bg`   |
-| `--drs-primary`            | Accent / highlight colour         | `#f97316`    |
-| `--drs-primary-fg`         | Foreground on accent colour       | `#ffffff`    |
-| `--drs-text`               | Primary text colour               | `#f1f1f1`    |
-| `--drs-text-muted`         | Dimmed / secondary text           | 35 % opacity |
-| `--drs-border`             | Border and divider colour         | 8 % white    |
-| `--drs-hover`              | Hover background                  | 7 % white    |
-| `--drs-range-bg`           | In-range day background           | orange 14 %  |
-| `--drs-time-bg`            | Time-picker box background        | 5 % white    |
-| `--drs-font-family`        | Font family                       | `inherit`    |
-| `--drs-font-size`          | Base font size                    | `0.875rem`   |
-| `--drs-header-font-size`   | Month / year header size          | `0.9375rem`  |
-| `--drs-header-font-weight` | Month / year header weight        | `700`        |
-| `--drs-weekday-font-size`  | Day-of-week label size            | `0.6875rem`  |
-| `--drs-day-font-size`      | Day number size                   | `0.875rem`   |
-| `--drs-sidebar-font-size`  | Predefined-range label size       | `0.875rem`   |
-| `--drs-time-font-size`     | Hour / minute number size         | `1.375rem`   |
-| `--drs-ampm-font-size`     | AM/PM toggle size                 | `0.9375rem`  |
-| `--drs-label-font-size`    | "Start time:" / "End time:" label | `0.8125rem`  |
-| `--drs-trigger-font-size`  | Trigger button text size          | `0.875rem`   |
-| `--drs-apply-font-size`    | Apply button text size            | `0.875rem`   |
+| Variable                   | Description                       | Default     |
+| -------------------------- | --------------------------------- | ----------- |
+| `--drs-radius`             | Overlay panel border radius       | `10px`      |
+| `--drs-radius-sm`          | Button border radius              | `5px`       |
+| `--drs-sidebar-width`      | Predefined-ranges sidebar width   | `148px`     |
+| `--drs-overlay-z`          | z-index of the overlay panel      | `1000`      |
+| `--drs-shadow`             | Overlay panel box shadow          | dark shadow |
+| `--drs-bg`                 | Overlay / modal background        | `#1e1f22`   |
+| `--drs-trigger-bg`         | Trigger button background         | `--drs-bg`  |
+| `--drs-primary`            | Accent / highlight colour         | `#f97316`   |
+| `--drs-primary-fg`         | Foreground on accent colour       | `#ffffff`   |
+| `--drs-text`               | Primary text colour               | `#f1f1f1`   |
+| `--drs-text-muted`         | Dimmed / secondary text           | 35% opacity |
+| `--drs-border`             | Border and divider colour         | 8% white    |
+| `--drs-hover`              | Hover background                  | 7% white    |
+| `--drs-range-bg`           | In-range day background           | orange 14%  |
+| `--drs-time-bg`            | Time-picker box background        | 5% white    |
+| `--drs-font-family`        | Font family                       | `inherit`   |
+| `--drs-font-size`          | Base font size                    | `0.875rem`  |
+| `--drs-header-font-size`   | Month / year header size          | `0.9375rem` |
+| `--drs-header-font-weight` | Month / year header weight        | `700`       |
+| `--drs-weekday-font-size`  | Day-of-week label size            | `0.6875rem` |
+| `--drs-day-font-size`      | Day number size                   | `0.875rem`  |
+| `--drs-sidebar-font-size`  | Predefined-range label size       | `0.875rem`  |
+| `--drs-time-font-size`     | Hour / minute number size         | `1.375rem`  |
+| `--drs-ampm-font-size`     | AM/PM toggle size                 | `0.9375rem` |
+| `--drs-label-font-size`    | "Start time:" / "End time:" label | `0.8125rem` |
+| `--drs-trigger-font-size`  | Trigger button text size          | `0.875rem`  |
+| `--drs-apply-font-size`    | Apply button text size            | `0.875rem`  |
+
+---
 
 ## Exported API surface
 
 ```ts
-// Components
-import { DateRangePickerComponent } from 'ng-date-hour-range-selector';
-import { CalendarComponent } from 'ng-date-hour-range-selector';
-import { TimePickerComponent } from 'ng-date-hour-range-selector';
-import { PredefinedRangesComponent } from 'ng-date-hour-range-selector';
+// Components & Directive
+export { DateRangePickerComponent } from 'ng-date-hour-range-selector';
+export { DateRangePickerDirective } from 'ng-date-hour-range-selector';
+export { DateRangePickerPanelComponent } from 'ng-date-hour-range-selector';
+export { CalendarComponent } from 'ng-date-hour-range-selector';
+export { TimePickerComponent } from 'ng-date-hour-range-selector';
+export { PredefinedRangesComponent } from 'ng-date-hour-range-selector';
 
 // Models
-import type { DateRange, PredefinedRange } from 'ng-date-hour-range-selector';
-import type { PickerConfig } from 'ng-date-hour-range-selector';
-import type { PickerLocale } from 'ng-date-hour-range-selector';
-import type { TimeValue } from 'ng-date-hour-range-selector';
-import type { CalendarCell } from 'ng-date-hour-range-selector';
+export type { DateRange, PredefinedRange } from 'ng-date-hour-range-selector';
+export type { PickerConfig } from 'ng-date-hour-range-selector';
+export type { PickerLocale } from 'ng-date-hour-range-selector';
+export type { TimeValue } from 'ng-date-hour-range-selector';
+export type { CalendarCell } from 'ng-date-hour-range-selector';
+export type { ResolvedPickerConfig } from 'ng-date-hour-range-selector';
 
 // Tokens & defaults
-import { PICKER_CONFIG, DEFAULT_PICKER_CONFIG } from 'ng-date-hour-range-selector';
-import { PICKER_LOCALE, DEFAULT_PICKER_LOCALE } from 'ng-date-hour-range-selector';
+export { PICKER_CONFIG, DEFAULT_PICKER_CONFIG } from 'ng-date-hour-range-selector';
+export { PICKER_LOCALE, DEFAULT_PICKER_LOCALE } from 'ng-date-hour-range-selector';
 
 // Service
-import { DateUtilsService } from 'ng-date-hour-range-selector';
+export { DateUtilsService } from 'ng-date-hour-range-selector';
 ```
+
+---
 
 ## Development
 
@@ -352,9 +504,11 @@ npm run build:lib
 # Build library + demo
 npm run build
 
-# Run unit tests (Vitest)
+# Run unit tests
 npm test
 ```
+
+---
 
 ## License
 

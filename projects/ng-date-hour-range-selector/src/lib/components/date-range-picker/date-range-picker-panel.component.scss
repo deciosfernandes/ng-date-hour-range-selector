@@ -1,0 +1,145 @@
+/* ─── Overlay panel ──────────────────────────────────────────────────────── */
+
+.drs-overlay {
+  font-family: var(--drs-font-family, inherit);
+  font-size: var(--drs-font-size, 0.875rem);
+  color: var(--drs-text, #ffffff);
+  z-index: var(--drs-overlay-z, 1000);
+}
+
+.drs-overlay__panel {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  background: var(--drs-bg, #1e1e1e);
+  border: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--drs-radius, 10px);
+  box-shadow: var(--drs-shadow, 0 8px 32px rgba(0, 0, 0, 0.5));
+  overflow: hidden;
+}
+
+/* ─── Sidebar ────────────────────────────────────────────────────────────── */
+
+.drs-overlay__sidebar {
+  border-right: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+  padding: 16px 0;
+}
+
+/* ─── Calendar area ──────────────────────────────────────────────────────── */
+
+.drs-overlay__calendar {
+  padding: 16px 20px;
+  flex-shrink: 0;
+}
+
+/* ─── Time pickers ───────────────────────────────────────────────────────── */
+
+.drs-overlay__times {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 16px 20px;
+  border-left: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+  flex-shrink: 0;
+  min-width: 160px;
+  justify-content: flex-start;
+}
+
+.drs-time-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drs-time-section__label {
+  font-size: var(--drs-label-font-size, 0.8125rem);
+  font-weight: 700;
+  color: var(--drs-text, #ffffff);
+  letter-spacing: 0.01em;
+}
+
+/* ─── Apply button ───────────────────────────────────────────────────────── */
+
+.drs-apply-row {
+  margin-top: auto;
+  padding-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+
+  &--inline {
+    border-top: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+    padding: 12px 20px;
+    margin-top: 0;
+  }
+}
+
+.drs-apply-btn {
+  padding: 6px 18px;
+  background: var(--drs-primary, #f97316);
+  color: var(--drs-primary-fg, #ffffff);
+  border: none;
+  border-radius: var(--drs-radius-sm, 5px);
+  font-family: var(--drs-font-family, inherit);
+  font-size: var(--drs-apply-font-size, 0.875rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--drs-primary, #f97316);
+  }
+}
+
+/* ─── Responsive / mobile ─────────────────────────────────────────────────
+   Below 640 px the panel stacks vertically:
+     • predefined-range sidebar → horizontal scrollable strip at the top
+     • calendar → full-width
+     • time pickers → side-by-side row at the bottom
+ * -------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .drs-overlay__panel {
+    flex-direction: column;
+    max-width: calc(100vw - 24px);
+    max-height: 90dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .drs-overlay__sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+    padding: 10px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .drs-overlay__calendar {
+    padding: 12px 16px;
+    overflow-x: auto;
+  }
+
+  .drs-overlay__times {
+    flex-direction: row;
+    border-left: none;
+    border-top: 1px solid var(--drs-border, rgba(255, 255, 255, 0.08));
+    gap: 12px;
+    padding: 14px 16px;
+    min-width: unset;
+  }
+
+  .drs-time-section {
+    flex: 1;
+    align-items: center;
+  }
+}

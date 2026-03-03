@@ -541,5 +541,129 @@ describe('DateRangePickerComponent', () => {
       expect(component['displayValue']()).not.toBe('');
       expect(typeof component['displayValue']()).toBe('string');
     });
+
+    it('returns the activeRangeLabel when a predefined range is active', () => {
+      component['onRangeSelect']({
+        label: 'This week',
+        range: () => ({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 7, 23, 59) }),
+      });
+      expect(component['activeRangeLabel']()).toBe('This week');
+      expect(component['displayValue']()).toBe('This week');
+    });
+
+    it('returns formatted dates (not label) after label is cleared by manual selection', () => {
+      component['onRangeSelect']({
+        label: 'Today',
+        range: () => ({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 1, 23, 59) }),
+      });
+      // Begin a manual selection — clears label
+      component['onDateSelect'](new Date(2024, 0, 5));
+      component['onDateSelect'](new Date(2024, 0, 10));
+      expect(component['activeRangeLabel']()).toBeNull();
+      expect(component['displayValue']()).not.toBe('Today');
+      expect(component['displayValue']()).not.toBe('');
+    });
+  });
+
+  // ─── initialRange ──────────────────────────────────────────────────────
+
+  describe('initialRange', () => {
+    it('applies a DateRange initial value on init', () => {
+      const f = TestBed.createComponent(DateRangePickerComponent);
+      const range = { start: new Date(2024, 0, 1), end: new Date(2024, 0, 7) };
+      f.componentRef.setInput('initialRange', range);
+      f.detectChanges(); // ngOnInit runs here
+      expect(f.componentInstance.value()).toEqual(range);
+      expect(f.componentInstance['rangeStart']()?.getDate()).toBe(1);
+      expect(f.componentInstance['rangeEnd']()?.getDate()).toBe(7);
+    });
+
+    it('applies a PredefinedRange as initial value and sets the label', () => {
+      const f = TestBed.createComponent(DateRangePickerComponent);
+      const preset = {
+        label: 'Jan 2024',
+        range: () => ({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 31) }),
+      };
+      f.componentRef.setInput('initialRange', preset);
+      f.detectChanges();
+      expect(f.componentInstance['activeRangeLabel']()).toBe('Jan 2024');
+      expect(f.componentInstance.value()?.start.getMonth()).toBe(0);
+      expect(f.componentInstance.value()?.end.getDate()).toBe(31);
+    });
+
+    it('initialRange is ignored when the CVA already provided a value via writeValue', () => {
+      const f = TestBed.createComponent(DateRangePickerComponent);
+      const cvaRange = { start: new Date(2024, 5, 1), end: new Date(2024, 5, 30) };
+      const initRange = { start: new Date(2024, 0, 1), end: new Date(2024, 0, 7) };
+      // Write via CVA first (simulates formControl binding)
+      f.componentInstance.writeValue(cvaRange);
+      f.componentRef.setInput('initialRange', initRange);
+      f.detectChanges();
+      // CVA value must win
+      expect(f.componentInstance.value()?.start.getMonth()).toBe(5);
+    });
+
+    it('adjusts the calendar view to the initial range start month', () => {
+      const f = TestBed.createComponent(DateRangePickerComponent);
+      const range = { start: new Date(2025, 6, 1), end: new Date(2025, 6, 31) };
+      f.componentRef.setInput('initialRange', range);
+      f.detectChanges();
+      expect(f.componentInstance['viewYear']()).toBe(2025);
+      expect(f.componentInstance['viewMonth']()).toBe(6);
+    });
+  });
+
+  // ─── auto-label detection (matchPredefinedRange) ───────────────────────
+
+  describe('auto-label detection', () => {
+    const CUSTOM_RANGES = [
+      {
+        label: 'Jan 2024',
+        range: () => ({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 31) }),
+      },
+      {
+        label: 'Feb 2024',
+        range: () => ({ start: new Date(2024, 1, 1), end: new Date(2024, 1, 29) }),
+      },
+    ];
+
+    beforeEach(() => {
+      fixture.componentRef.setInput('predefinedRanges', CUSTOM_RANGES);
+      fixture.detectChanges();
+    });
+
+    it('writeValue sets activeRangeLabel when range matches a predefined range', () => {
+      component.writeValue({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 31) });
+      expect(component['activeRangeLabel']()).toBe('Jan 2024');
+    });
+
+    it('writeValue leaves activeRangeLabel null when range does not match any predefined range', () => {
+      component.writeValue({ start: new Date(2024, 2, 1), end: new Date(2024, 2, 31) });
+      expect(component['activeRangeLabel']()).toBeNull();
+    });
+
+    it('setRange sets activeRangeLabel when range matches a predefined range', () => {
+      component.setRange({ start: new Date(2024, 1, 1), end: new Date(2024, 1, 29) });
+      expect(component['activeRangeLabel']()).toBe('Feb 2024');
+    });
+
+    it('setRange leaves activeRangeLabel null when there is no match', () => {
+      component.setRange({ start: new Date(2024, 3, 1), end: new Date(2024, 3, 30) });
+      expect(component['activeRangeLabel']()).toBeNull();
+    });
+
+    it('displayValue returns label when setRange matches a predefined range', () => {
+      component.setRange({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 31) });
+      expect(component['displayValue']()).toBe('Jan 2024');
+    });
+
+    it('matching is date-only (ignores time component)', () => {
+      // Range with non-midnight times still matches
+      component.writeValue({
+        start: new Date(2024, 0, 1, 8, 30),
+        end: new Date(2024, 0, 31, 23, 59),
+      });
+      expect(component['activeRangeLabel']()).toBe('Jan 2024');
+    });
   });
 });
