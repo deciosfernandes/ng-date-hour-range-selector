@@ -39,6 +39,54 @@
 /&gt;</code></pre>
   </section>
 
+  <!-- ─── 2. Directive on a native input ──────────────────────────────── -->
+  <section class="demo-section">
+    <h2>directive on a native &lt;input&gt; · initial range: last 7 days</h2>
+    <p class="demo-desc">
+      Apply <code>drsDateRangePicker</code> directly to any existing <code>&lt;input&gt;</code>. The
+      selected range is shown inside the input. When a value matches a predefined range the label is
+      shown instead.
+    </p>
+    <div class="demo-row">
+      <input
+        class="demo-native-input"
+        type="text"
+        drsDateRangePicker
+        [formControl]="directiveControl"
+        [initialRange]="last7DaysRange"
+        ariaLabel="Directive date range input"
+        placeholder="Select date range"
+      />
+    </div>
+
+    @if (directiveControl.value; as range) {
+      <div class="demo-output">
+        <strong>Selected range:</strong><br />
+        Start: {{ range.start | date: 'medium' }}<br />
+        End: {{ range.end | date: 'medium' }}
+      </div>
+    }
+
+    <pre class="demo-code"><code>// component.ts
+readonly directiveControl = new FormControl&lt;DateRange | null&gt;(null);
+readonly last7DaysRange: PredefinedRange = &#123;
+  label: 'Last 7 days',
+  range: () => &#123;
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 6);
+    return &#123; start, end &#125;;
+  &#125;,
+&#125;;
+
+&lt;!-- template --&gt;
+&lt;input
+  drsDateRangePicker
+  [formControl]="directiveControl"
+  [initialRange]="last7DaysRange"
+/&gt;</code></pre>
+  </section>
+
   <!-- ─── 2. Date-only, custom accent ─────────────────────────────────── -->
   <section class="demo-section">
     <h2>date-only · custom blue accent</h2>

@@ -48,80 +48,26 @@
 
 <!-- Overlay template (attached to body via CDK TemplatePortal) -->
 <ng-template #overlayTpl>
-  <div class="drs-overlay" role="dialog" aria-modal="true" aria-label="Date range picker">
-    <div class="drs-overlay__panel">
-      <!-- Sidebar: predefined ranges -->
-      <drs-predefined-ranges
-        class="drs-overlay__sidebar"
-        [ranges]="resolvedPredefinedRanges()"
-        [activeLabel]="activeRangeLabel()"
-        [showReset]="resolvedConfig().showResetButton"
-        (rangeSelect)="onRangeSelect($event)"
-        (reset)="onReset()"
-      />
-
-      <!-- Calendar -->
-      <div class="drs-overlay__calendar">
-        <drs-calendar
-          [year]="viewYear()"
-          [month]="viewMonth()"
-          [rangeStart]="rangeStart()"
-          [rangeEnd]="rangeEnd()"
-          [minDate]="resolvedConfig().minDate ?? null"
-          [maxDate]="resolvedConfig().maxDate ?? null"
-          [weekStartsOn]="resolvedConfig().weekStartsOn"
-          (prevMonth)="prevMonth()"
-          (nextMonth)="nextMonth()"
-          (dateSelect)="onDateSelect($event)"
-        />
-      </div>
-
-      <!-- Time pickers -->
-      @if (resolvedConfig().showTime) {
-        <div class="drs-overlay__times">
-          <!-- Start time -->
-          <div class="drs-time-section">
-            <span class="drs-time-section__label">{{ locale.startTime }}</span>
-            <drs-time-picker
-              [hour]="startHour()"
-              [minute]="startMinute()"
-              [timeFormat]="resolvedConfig().timeFormat"
-              [minuteStep]="resolvedConfig().minuteStep"
-              [ariaLabel]="locale.startTime"
-              (timeChange)="onStartTimeChange($event)"
-            />
-          </div>
-
-          <!-- End time -->
-          <div class="drs-time-section">
-            <span class="drs-time-section__label">{{ locale.endTime }}</span>
-            <drs-time-picker
-              [hour]="endHour()"
-              [minute]="endMinute()"
-              [timeFormat]="resolvedConfig().timeFormat"
-              [minuteStep]="resolvedConfig().minuteStep"
-              [ariaLabel]="locale.endTime"
-              (timeChange)="onEndTimeChange($event)"
-            />
-          </div>
-
-          @if (resolvedConfig().showApplyButton) {
-            <div class="drs-apply-row">
-              <button class="drs-apply-btn" type="button" (click)="onApply()">
-                {{ locale.apply }}
-              </button>
-            </div>
-          }
-        </div>
-      }
-
-      @if (!resolvedConfig().showTime && resolvedConfig().showApplyButton) {
-        <div class="drs-apply-row drs-apply-row--inline">
-          <button class="drs-apply-btn" type="button" (click)="onApply()">
-            {{ locale.apply }}
-          </button>
-        </div>
-      }
-    </div>
-  </div>
+  <drs-picker-panel
+    [rangeStart]="rangeStart()"
+    [rangeEnd]="rangeEnd()"
+    [viewYear]="viewYear()"
+    [viewMonth]="viewMonth()"
+    [config]="panelConfig()"
+    [predefinedRanges]="resolvedPredefinedRanges()"
+    [locale]="locale"
+    [activeRangeLabel]="activeRangeLabel()"
+    [startHour]="startHour()"
+    [startMinute]="startMinute()"
+    [endHour]="endHour()"
+    [endMinute]="endMinute()"
+    (dateSelect)="onDateSelect($event)"
+    (rangeSelect)="onRangeSelect($event)"
+    (startTimeChange)="onStartTimeChange($event)"
+    (endTimeChange)="onEndTimeChange($event)"
+    (prevMonth)="prevMonth()"
+    (nextMonth)="nextMonth()"
+    (reset)="onReset()"
+    (apply)="onApply()"
+  />
 </ng-template>

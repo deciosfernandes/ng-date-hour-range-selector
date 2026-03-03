@@ -1,21 +1,20 @@
 import { ConnectedPosition, Overlay, OverlayRef } from '@angular/cdk/overlay';
-import { TemplatePortal } from '@angular/cdk/portal';
+import { ComponentPortal } from '@angular/cdk/portal';
 import {
-  ChangeDetectionStrategy,
-  Component,
+  ComponentRef,
+  Directive,
   ElementRef,
   OnDestroy,
   OnInit,
   Provider,
-  TemplateRef,
   ViewContainerRef,
   computed,
+  effect,
   forwardRef,
   inject,
   input,
   output,
   signal,
-  viewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PickerConfig } from '../../models/config.model';
@@ -29,39 +28,46 @@ import {
   ResolvedPickerConfig,
 } from './date-range-picker-panel.component';
 
-const DATE_RANGE_PICKER_VALUE_ACCESSOR: Provider = {
+function isPredefinedRange(v: DateRange | PredefinedRange): v is PredefinedRange {
+  return typeof (v as PredefinedRange).range === 'function';
+}
+
+const DATE_RANGE_PICKER_DIRECTIVE_VALUE_ACCESSOR: Provider = {
   provide: NG_VALUE_ACCESSOR,
-  useExisting: forwardRef(() => DateRangePickerComponent),
+  useExisting: forwardRef(() => DateRangePickerDirective),
   multi: true,
 };
 
-@Component({
-  selector: 'drs-date-range-picker',
-  standalone: true,
-  imports: [DateRangePickerPanelComponent],
-  templateUrl: './date-range-picker.component.html',
-  styleUrl: './date-range-picker.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+/**
+ * Directive that turns any `<input>` into a date-range picker trigger.
+ *
+ * Usage:
+ * ```html
+ * <input drsDateRangePicker [formControl]="ctrl" [showTime]="false" />
+ * ```
+ */
+@Directive({
+  selector: 'input[drsDateRangePicker]',
   host: {
-    class: 'drs-picker',
-    '[class.drs-picker--open]': 'isOpen()',
-    '[class.drs-picker--disabled]': 'isDisabled()',
+    'attr.readonly': '',
+    'attr.aria-haspopup': 'dialog',
+    '[attr.aria-expanded]': 'isOpen()',
+    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.disabled]': 'isDisabled() ? "" : null',
+    '(click)': 'open()',
   },
-  providers: [DATE_RANGE_PICKER_VALUE_ACCESSOR],
+  providers: [DATE_RANGE_PICKER_DIRECTIVE_VALUE_ACCESSOR],
 })
-export class DateRangePickerComponent implements ControlValueAccessor, OnInit, OnDestroy {
+export class DateRangePickerDirective implements ControlValueAccessor, OnInit, OnDestroy {
   // ─── DI ─────────────────────────────────────────────────────────────────
+  private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly overlay = inject(Overlay);
   private readonly viewContainerRef = inject(ViewContainerRef);
   protected readonly dateUtils = inject(DateUtilsService);
   protected readonly locale = inject(PICKER_LOCALE);
   private readonly globalConfig = inject(PICKER_CONFIG);
 
-  // ─── View queries ────────────────────────────────────────────────────────
-  private readonly triggerRef = viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
-  private readonly overlayTplRef = viewChild.required<TemplateRef<unknown>>('overlayTpl');
-
-  // ─── Component inputs ────────────────────────────────────────────────────
+  // ─── Inputs ──────────────────────────────────────────────────────────────
   showTime = input<boolean | undefined>(undefined);
   timeFormat = input<'12h' | '24h' | undefined>(undefined);
   minuteStep = input<number | undefined>(undefined);
@@ -71,43 +77,34 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
   weekStartsOn = input<0 | 1 | undefined>(undefined);
   position = input<ConnectedPosition[] | undefined>(undefined);
   showResetButton = input<boolean | undefined>(undefined);
-  calendarIcon = input<'left' | 'right' | 'hidden' | undefined>(undefined);
   showApplyButton = input<boolean | undefined>(undefined);
   closeOnSelect = input<boolean | undefined>(undefined);
-  /** Accessible label for the trigger button */
-  ariaLabel = input<string>('Select date range');
   /** Initial range to pre-select on load. Accepts a DateRange or a PredefinedRange. */
   initialRange = input<DateRange | PredefinedRange | null | undefined>(undefined);
+  /** Accessible label forwarded to the host input. */
+  ariaLabel = input<string>('Select date range');
 
   // ─── Outputs ─────────────────────────────────────────────────────────────
-  /** Emitted whenever a complete DateRange is committed (both start and end set). */
   readonly rangeChange = output<DateRange | null>();
 
   // ─── Internal state ───────────────────────────────────────────────────────
   protected readonly isOpen = signal(false);
   protected readonly isDisabled = signal(false);
-  /** The committed (emitted) value */
   readonly value = signal<DateRange | null>(null);
-  /** In-progress start date while the user is selecting */
   protected readonly rangeStart = signal<Date | null>(null);
-  /** In-progress end date — null means the user has picked a start but not yet an end */
   protected readonly rangeEnd = signal<Date | null>(null);
-  /** Which predefined-range label is currently active */
   protected readonly activeRangeLabel = signal<string | null>(null);
-  /** Pending start time used when no rangeStart date has been selected yet */
   private readonly _pendingStartHour = signal(0);
   private readonly _pendingStartMinute = signal(0);
-  /** Pending end time used when no rangeEnd date has been selected yet */
   private readonly _pendingEndHour = signal(23);
   private readonly _pendingEndMinute = signal(59);
 
-  // Calendar view month
   private readonly _viewYear = signal(new Date().getFullYear());
   private readonly _viewMonth = signal(new Date().getMonth());
-  protected readonly viewYear = this._viewYear.asReadonly();
-  protected readonly viewMonth = this._viewMonth.asReadonly();
 
   private overlayRef: OverlayRef | null = null;
+  /** ComponentRef of the panel while the overlay is open; null when closed. */
+  private readonly _panelRef = signal<ComponentRef<DateRangePickerPanelComponent> | null>(null);
 
   // CVA callbacks
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -128,10 +125,6 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
       maxDate: this.maxDate() ?? (g as PickerConfig).maxDate ?? null,
       position: this.position() ?? (g as PickerConfig).position ?? DEFAULT_PICKER_CONFIG.position,
       showResetButton: this.showResetButton() ?? g.showResetButton ?? true,
-      calendarIcon: (this.calendarIcon() ?? g.calendarIcon ?? 'right') as
-        | 'left'
-        | 'right'
-        | 'hidden',
       showApplyButton: this.showApplyButton() ?? g.showApplyButton ?? false,
       closeOnSelect: this.closeOnSelect() ?? g.closeOnSelect ?? true,
     };
@@ -143,7 +136,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
       this.dateUtils.getDefaultPredefinedRanges(this.resolvedConfig().weekStartsOn),
   );
 
-  protected readonly panelConfig = computed((): ResolvedPickerConfig => {
+  private readonly panelConfig = computed((): ResolvedPickerConfig => {
     const c = this.resolvedConfig();
     return {
       showTime: c.showTime,
@@ -181,22 +174,47 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     () => this.rangeEnd()?.getMinutes() ?? this._pendingEndMinute(),
   );
 
+  constructor() {
+    // Write the formatted value to the native input element
+    effect(() => {
+      this.el.nativeElement.value = this.displayValue();
+    });
+
+    // Reactively sync state into the panel component while the overlay is open
+    effect(() => {
+      const ref = this._panelRef();
+      if (!ref) return;
+      ref.setInput('rangeStart', this.rangeStart());
+      ref.setInput('rangeEnd', this.rangeEnd());
+      ref.setInput('viewYear', this._viewYear());
+      ref.setInput('viewMonth', this._viewMonth());
+      ref.setInput('config', this.panelConfig());
+      ref.setInput('predefinedRanges', this.resolvedPredefinedRanges());
+      ref.setInput('locale', this.locale);
+      ref.setInput('activeRangeLabel', this.activeRangeLabel());
+      ref.setInput('startHour', this.startHour());
+      ref.setInput('startMinute', this.startMinute());
+      ref.setInput('endHour', this.endHour());
+      ref.setInput('endMinute', this.endMinute());
+    });
+  }
+
   ngOnInit(): void {
     this._applyInitialRange();
   }
 
-  // ─── Overlay management ───────────────────────────────────────────────────
-  protected toggle(): void {
-    this.isOpen() ? this.close() : this.open();
+  ngOnDestroy(): void {
+    this.overlayRef?.dispose();
   }
 
-  protected open(): void {
+  // ─── Overlay management ───────────────────────────────────────────────────
+  open(): void {
     if (this.isDisabled() || this.overlayRef?.hasAttached()) return;
 
     const cfg = this.resolvedConfig();
     const positionStrategy = this.overlay
       .position()
-      .flexibleConnectedTo(this.triggerRef().nativeElement)
+      .flexibleConnectedTo(this.el)
       .withPositions(cfg.position)
       .withFlexibleDimensions(false)
       .withPush(false);
@@ -214,22 +232,33 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
       if (e.key === 'Escape') this.close();
     });
 
-    this.overlayRef.attach(new TemplatePortal(this.overlayTplRef(), this.viewContainerRef));
+    const portal = new ComponentPortal(DateRangePickerPanelComponent, this.viewContainerRef);
+    const ref = this.overlayRef.attach(portal);
+
+    // Wire up panel outputs
+    ref.instance.dateSelect.subscribe((date) => this.onDateSelect(date));
+    ref.instance.rangeSelect.subscribe((range) => this.onRangeSelect(range));
+    ref.instance.startTimeChange.subscribe((t) => this.onStartTimeChange(t));
+    ref.instance.endTimeChange.subscribe((t) => this.onEndTimeChange(t));
+    ref.instance.prevMonth.subscribe(() => this._prevMonth());
+    ref.instance.nextMonth.subscribe(() => this._nextMonth());
+    ref.instance.reset.subscribe(() => this.onReset());
+    ref.instance.apply.subscribe(() => this.close());
+
+    // Setting _panelRef triggers the state-sync effect
+    this._panelRef.set(ref);
     this.isOpen.set(true);
     this.onTouched();
   }
 
-  protected close(): void {
+  close(): void {
+    this._panelRef.set(null);
     this.overlayRef?.detach();
     this.isOpen.set(false);
   }
 
-  ngOnDestroy(): void {
-    this.overlayRef?.dispose();
-  }
-
   // ─── Calendar navigation ──────────────────────────────────────────────────
-  protected prevMonth(): void {
+  private _prevMonth(): void {
     const m = this._viewMonth();
     if (m === 0) {
       this._viewMonth.set(11);
@@ -239,7 +268,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     }
   }
 
-  protected nextMonth(): void {
+  private _nextMonth(): void {
     const m = this._viewMonth();
     if (m === 11) {
       this._viewMonth.set(0);
@@ -254,7 +283,6 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     const start = this.rangeStart();
     const end = this.rangeEnd();
 
-    // Both set or no start → begin a new selection
     if (start === null || end !== null) {
       const newStart = new Date(date);
       newStart.setHours(
@@ -269,7 +297,6 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
       return;
     }
 
-    // Second click → complete the selection
     let newStart: Date;
     let newEnd: Date;
 
@@ -278,7 +305,6 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
       newEnd = new Date(date);
       newEnd.setHours(this.endHour(), this.endMinute(), 0, 0);
     } else {
-      // Clicked before start → swap
       newEnd = new Date(start);
       newEnd.setHours(23, 59, 59, 0);
       newStart = new Date(date);
@@ -287,8 +313,8 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
 
     this.rangeStart.set(newStart);
     this.rangeEnd.set(newEnd);
-    this.activeRangeLabel.set(this.matchPredefinedRange({ start: newStart, end: newEnd }));
-    this.commitValue({ start: newStart, end: newEnd });
+    this.activeRangeLabel.set(this._matchPredefinedRange({ start: newStart, end: newEnd }));
+    this._commitValue({ start: newStart, end: newEnd });
     if (this.resolvedConfig().closeOnSelect) this.close();
   }
 
@@ -300,7 +326,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     this.activeRangeLabel.set(range.label);
     this._viewYear.set(dr.start.getFullYear());
     this._viewMonth.set(dr.start.getMonth());
-    this.commitValue(dr);
+    this._commitValue(dr);
     if (this.resolvedConfig().closeOnSelect) this.close();
   }
 
@@ -330,7 +356,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     updated.setHours(time.hour, time.minute, 0, 0);
     this.rangeStart.set(updated);
     const end = this.rangeEnd() ?? this.value()?.end ?? null;
-    if (end) this.commitValue({ start: updated, end });
+    if (end) this._commitValue({ start: updated, end });
   }
 
   protected onEndTimeChange(time: TimeValue): void {
@@ -344,65 +370,40 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     updated.setHours(time.hour, time.minute, 0, 0);
     this.rangeEnd.set(updated);
     const start = this.rangeStart() ?? this.value()?.start ?? null;
-    if (start) this.commitValue({ start, end: updated });
-  }
-
-  protected onApply(): void {
-    this.close();
+    if (start) this._commitValue({ start, end: updated });
   }
 
   // ─── Public API ───────────────────────────────────────────────────────────
-  /**
-   * Advance the current range forward by one "step" (equal to the range's length).
-   * E.g. Mon–Sun → next Mon–Sun.
-   */
   nextRange(): void {
     const current = this.value();
     if (!current) return;
     const cfg = this.resolvedConfig();
     const next = this.dateUtils.advanceRange(current, 1, cfg.minDate, cfg.maxDate);
-    this.applyRange(next);
+    this._applyRange(next);
   }
 
-  /**
-   * Rewind the current range backward by one step.
-   * E.g. Mon–Sun → previous Mon–Sun.
-   */
   previousRange(): void {
     const current = this.value();
     if (!current) return;
     const cfg = this.resolvedConfig();
     const prev = this.dateUtils.advanceRange(current, -1, cfg.minDate, cfg.maxDate);
-    this.applyRange(prev);
+    this._applyRange(prev);
   }
 
-  /**
-   * Programmatically set the selected range.
-   * Passing `null` clears the selection.
-   * @param range The range to apply, or `null` to clear.
-   * @param emitEvent When `false`, suppresses `rangeChange` output and CVA `onChange`. Defaults to `true`.
-   */
   setRange(range: DateRange | null, emitEvent = true): void {
     if (range) {
       this.rangeStart.set(range.start);
       this.rangeEnd.set(range.end);
       this._viewYear.set(range.start.getFullYear());
       this._viewMonth.set(range.start.getMonth());
-      this.activeRangeLabel.set(this.matchPredefinedRange(range));
+      this.activeRangeLabel.set(this._matchPredefinedRange(range));
       this.value.set(range);
       if (emitEvent) {
         this.onChange(range);
         this.rangeChange.emit(range);
       }
     } else {
-      this.rangeStart.set(null);
-      this.rangeEnd.set(null);
-      this.activeRangeLabel.set(null);
-      this.value.set(null);
-      this._pendingStartHour.set(0);
-      this._pendingStartMinute.set(0);
-      this._pendingEndHour.set(23);
-      this._pendingEndMinute.set(59);
+      this._clearState();
       if (emitEvent) {
         this.onChange(null);
         this.rangeChange.emit(null);
@@ -419,14 +420,9 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
       this.rangeEnd.set(v.end);
       this._viewYear.set(v.start.getFullYear());
       this._viewMonth.set(v.start.getMonth());
-      this.activeRangeLabel.set(this.matchPredefinedRange(v));
+      this.activeRangeLabel.set(this._matchPredefinedRange(v));
     } else {
-      this.rangeStart.set(null);
-      this.rangeEnd.set(null);
-      this._pendingStartHour.set(0);
-      this._pendingStartMinute.set(0);
-      this._pendingEndHour.set(23);
-      this._pendingEndMinute.set(59);
+      this._clearState();
     }
   }
 
@@ -442,42 +438,50 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     this.isDisabled.set(isDisabled);
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
-  private commitValue(range: DateRange): void {
+  // ─── Private helpers ──────────────────────────────────────────────────────
+  private _commitValue(range: DateRange): void {
     this.value.set(range);
     this.onChange(range);
     this.rangeChange.emit(range);
   }
 
-  private applyRange(range: DateRange): void {
+  private _applyRange(range: DateRange): void {
     this.rangeStart.set(range.start);
     this.rangeEnd.set(range.end);
     this._viewYear.set(range.start.getFullYear());
     this._viewMonth.set(range.start.getMonth());
-    this.activeRangeLabel.set(this.matchPredefinedRange(range));
-    this.commitValue(range);
+    this.activeRangeLabel.set(this._matchPredefinedRange(range));
+    this._commitValue(range);
+  }
+
+  private _clearState(): void {
+    this.rangeStart.set(null);
+    this.rangeEnd.set(null);
+    this.activeRangeLabel.set(null);
+    this._pendingStartHour.set(0);
+    this._pendingStartMinute.set(0);
+    this._pendingEndHour.set(23);
+    this._pendingEndMinute.set(59);
   }
 
   private _applyInitialRange(): void {
     const init = this.initialRange();
     if (!init || this.value()) return;
-    if (typeof (init as PredefinedRange).range === 'function') {
-      const pr = init as PredefinedRange;
-      const dr = pr.range();
+    if (isPredefinedRange(init)) {
+      const dr = init.range();
       this.rangeStart.set(dr.start);
       this.rangeEnd.set(dr.end);
-      this.activeRangeLabel.set(pr.label);
+      this.activeRangeLabel.set(init.label);
       this._viewYear.set(dr.start.getFullYear());
       this._viewMonth.set(dr.start.getMonth());
       this.value.set(dr);
     } else {
-      const dr = init as DateRange;
-      this.rangeStart.set(dr.start);
-      this.rangeEnd.set(dr.end);
-      this._viewYear.set(dr.start.getFullYear());
-      this._viewMonth.set(dr.start.getMonth());
-      this.activeRangeLabel.set(this.matchPredefinedRange(dr));
-      this.value.set(dr);
+      this.rangeStart.set(init.start);
+      this.rangeEnd.set(init.end);
+      this._viewYear.set(init.start.getFullYear());
+      this._viewMonth.set(init.start.getMonth());
+      this.activeRangeLabel.set(this._matchPredefinedRange(init));
+      this.value.set(init);
     }
   }
 
@@ -486,7 +490,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
    * the given range, or `null` if no match is found.
    * Comparison is date-only (ignores time) for robust matching.
    */
-  private matchPredefinedRange(range: DateRange): string | null {
+  private _matchPredefinedRange(range: DateRange): string | null {
     for (const pr of this.resolvedPredefinedRanges()) {
       const dr = pr.range();
       if (

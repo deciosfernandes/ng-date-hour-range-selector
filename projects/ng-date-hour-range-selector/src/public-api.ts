@@ -17,7 +17,10 @@ export type { CalendarCell } from './lib/services/date-utils.service';
 
 // Components
 export { CalendarComponent } from './lib/components/calendar/calendar.component';
+export { DateRangePickerPanelComponent } from './lib/components/date-range-picker/date-range-picker-panel.component';
+export type { ResolvedPickerConfig } from './lib/components/date-range-picker/date-range-picker-panel.component';
 export { DateRangePickerComponent } from './lib/components/date-range-picker/date-range-picker.component';
+export { DateRangePickerDirective } from './lib/components/date-range-picker/date-range-picker.directive';
 export { PredefinedRangesComponent } from './lib/components/predefined-ranges/predefined-ranges.component';
 export { TimePickerComponent } from './lib/components/time-picker/time-picker.component';
 export type { TimeValue } from './lib/components/time-picker/time-picker.component';

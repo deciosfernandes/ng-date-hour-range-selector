@@ -1,0 +1,76 @@
+<div class="drs-overlay" role="dialog" aria-modal="true" aria-label="Date range picker">
+  <div class="drs-overlay__panel">
+    <!-- Sidebar: predefined ranges -->
+    <drs-predefined-ranges
+      class="drs-overlay__sidebar"
+      [ranges]="predefinedRanges()"
+      [activeLabel]="activeRangeLabel()"
+      [showReset]="config().showResetButton"
+      (rangeSelect)="rangeSelect.emit($event)"
+      (reset)="reset.emit()"
+    />
+
+    <!-- Calendar -->
+    <div class="drs-overlay__calendar">
+      <drs-calendar
+        [year]="viewYear()"
+        [month]="viewMonth()"
+        [rangeStart]="rangeStart()"
+        [rangeEnd]="rangeEnd()"
+        [minDate]="config().minDate"
+        [maxDate]="config().maxDate"
+        [weekStartsOn]="config().weekStartsOn"
+        (prevMonth)="prevMonth.emit()"
+        (nextMonth)="nextMonth.emit()"
+        (dateSelect)="dateSelect.emit($event)"
+      />
+    </div>
+
+    <!-- Time pickers -->
+    @if (config().showTime) {
+      <div class="drs-overlay__times">
+        <!-- Start time -->
+        <div class="drs-time-section">
+          <span class="drs-time-section__label">{{ locale().startTime }}</span>
+          <drs-time-picker
+            [hour]="startHour()"
+            [minute]="startMinute()"
+            [timeFormat]="config().timeFormat"
+            [minuteStep]="config().minuteStep"
+            [ariaLabel]="locale().startTime"
+            (timeChange)="startTimeChange.emit($event)"
+          />
+        </div>
+
+        <!-- End time -->
+        <div class="drs-time-section">
+          <span class="drs-time-section__label">{{ locale().endTime }}</span>
+          <drs-time-picker
+            [hour]="endHour()"
+            [minute]="endMinute()"
+            [timeFormat]="config().timeFormat"
+            [minuteStep]="config().minuteStep"
+            [ariaLabel]="locale().endTime"
+            (timeChange)="endTimeChange.emit($event)"
+          />
+        </div>
+
+        @if (config().showApplyButton) {
+          <div class="drs-apply-row">
+            <button class="drs-apply-btn" type="button" (click)="apply.emit()">
+              {{ locale().apply }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    @if (!config().showTime && config().showApplyButton) {
+      <div class="drs-apply-row drs-apply-row--inline">
+        <button class="drs-apply-btn" type="button" (click)="apply.emit()">
+          {{ locale().apply }}
+        </button>
+      </div>
+    }
+  </div>
+</div>

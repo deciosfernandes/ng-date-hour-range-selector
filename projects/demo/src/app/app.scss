@@ -90,3 +90,53 @@
     color: inherit;
   }
 }
+
+.demo-desc {
+  margin: 0 0 14px;
+  font-size: 0.875rem;
+  color: rgba(241, 241, 241, 0.55);
+  line-height: 1.6;
+
+  code {
+    font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 0.875em;
+    color: rgba(249, 115, 22, 0.9);
+  }
+}
+
+/* Matches the library's trigger button style so the native input blends in */
+.demo-native-input {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  min-width: 220px;
+  background: #1e1e1e;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+  &:hover:not([disabled]) {
+    border-color: var(--drs-primary, #f97316);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--drs-primary, #f97316);
+  }
+
+  &[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* Placeholder */
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
+}
