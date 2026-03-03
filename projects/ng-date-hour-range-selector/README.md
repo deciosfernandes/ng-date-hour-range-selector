@@ -23,7 +23,7 @@ A flexible, fully accessible Angular date / date-time range picker built on top 
 npm install ng-date-hour-range-selector
 ```
 
-The package has peer dependencies on `@angular/cdk`, `@angular/common`, `@angular/core`, and `@angular/forms` (all `^21.0.0`).
+The package has peer dependencies on `@angular/cdk`, `@angular/common`, `@angular/core`, and `@angular/forms` (all `>=19.0.0`).
 
 Import the global theme in your `styles.scss` (or `angular.json` styles array):
 
@@ -67,6 +67,8 @@ export class MyComponent {
 | `position`         | `ConnectedPosition[]`           | bottom-start          | CDK overlay positions array                                              |
 | `showResetButton`  | `boolean`                       | `true`                | Show or hide the reset button in the sidebar                             |
 | `calendarIcon`     | `'left' \| 'right' \| 'hidden'` | `'right'`             | Position of the calendar icon in the trigger button, or hide it entirely |
+| `showApplyButton`  | `boolean`                       | `false`               | Show an Apply button that commits the selection and closes the picker    |
+| `closeOnSelect`    | `boolean`                       | `true`                | Automatically close the picker after a complete range is selected        |
 | `ariaLabel`        | `string`                        | `'Select date range'` | Accessible label for the trigger button                                  |
 
 All inputs can also be set globally via the `PICKER_CONFIG` token (see below).
@@ -140,6 +142,7 @@ const myLocale: PickerLocale = {
   startTime: 'Hora inicio:',
   endTime: 'Hora fin:',
   reset: 'Restablecer',
+  apply: 'Aplicar',
   placeholder: 'Seleccione un rango',
   formatRange: (s, e) => `${s.toLocaleDateString('es')} – ${e.toLocaleDateString('es')}`,
   formatRangeWithTime: (s, e) => {
