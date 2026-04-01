@@ -9,7 +9,8 @@
     "build:demo": "ng build demo",
     "build:ghpages": "ng build ng-date-hour-range-selector && ng build demo --base-href /ng-date-hour-range-selector/",
     "watch": "ng build ng-date-hour-range-selector --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "publish:lib": "ng build ng-date-hour-range-selector && npm publish dist/ng-date-hour-range-selector --access public"
   },
   "private": true,
   "packageManager": "npm@11.11.0",
