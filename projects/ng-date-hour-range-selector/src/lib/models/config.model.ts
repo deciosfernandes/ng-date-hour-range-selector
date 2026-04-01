@@ -29,4 +29,11 @@ export interface PickerConfig {
   showApplyButton?: boolean;
   /** Automatically close the picker after a complete range is selected. Default: true */
   closeOnSelect?: boolean;
+  /**
+   * Controls how a selected range is matched against predefined ranges to display the label.
+   * - `'day'` (default) — matches when the start and end fall on the same calendar days,
+   *   regardless of time (e.g. any range covering today counts as "Today").
+   * - `'exact'` — requires the start and end timestamps to match exactly.
+   */
+  rangeMatchMode?: 'day' | 'exact';
 }

@@ -74,6 +74,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
   calendarIcon = input<'left' | 'right' | 'hidden' | undefined>(undefined);
   showApplyButton = input<boolean | undefined>(undefined);
   closeOnSelect = input<boolean | undefined>(undefined);
+  rangeMatchMode = input<'day' | 'exact' | undefined>(undefined);
   /** Accessible label for the trigger button */
   ariaLabel = input<string>('Select date range');
   /** Initial range to pre-select on load. Accepts a DateRange or a PredefinedRange. */
@@ -134,6 +135,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
         | 'hidden',
       showApplyButton: this.showApplyButton() ?? g.showApplyButton ?? false,
       closeOnSelect: this.closeOnSelect() ?? g.closeOnSelect ?? true,
+      rangeMatchMode: (this.rangeMatchMode() ?? g.rangeMatchMode ?? 'day') as 'day' | 'exact',
     };
   });
 
@@ -482,17 +484,24 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
   }
 
   /**
-   * Returns the label of the first predefined range whose start/end days match
-   * the given range, or `null` if no match is found.
-   * Comparison is date-only (ignores time) for robust matching.
+   * Returns the label of the first predefined range that matches the given range,
+   * or `null` if no match is found.
+   *
+   * When `rangeMatchMode` is `'day'` (default), comparison ignores time and only
+   * checks that the start/end fall on the same calendar days.
+   * When `rangeMatchMode` is `'exact'`, both timestamps must match precisely.
    */
   private matchPredefinedRange(range: DateRange): string | null {
+    const exact = this.resolvedConfig().rangeMatchMode === 'exact';
     for (const pr of this.resolvedPredefinedRanges()) {
       const dr = pr.range();
-      if (
-        this.dateUtils.isSameDay(dr.start, range.start) &&
-        this.dateUtils.isSameDay(dr.end, range.end)
-      ) {
+      const startMatch = exact
+        ? dr.start.getTime() === range.start.getTime()
+        : this.dateUtils.isSameDay(dr.start, range.start);
+      const endMatch = exact
+        ? dr.end.getTime() === range.end.getTime()
+        : this.dateUtils.isSameDay(dr.end, range.end);
+      if (startMatch && endMatch) {
         return pr.label;
       }
     }

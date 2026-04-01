@@ -105,6 +105,7 @@ export class MyComponent {
 | `calendarIcon`     | `'left' \| 'right' \| 'hidden'` | `'right'`             | Position of the calendar icon in the trigger button, or hide it entirely |
 | `showApplyButton`  | `boolean`                       | `false`               | Show an Apply button that commits the selection and closes the picker    |
 | `closeOnSelect`    | `boolean`                       | `true`                | Automatically close the picker after a complete range is selected        |
+| `rangeMatchMode`   | `'day' \| 'exact'`              | `'day'`               | How selected ranges are matched to predefined labels — `'day'` ignores time, `'exact'` requires identical timestamps |
 | `initialRange`     | `DateRange \| PredefinedRange`  | `undefined`           | Range or predefined-range factory to pre-select on component load        |
 | `ariaLabel`        | `string`                        | `'Select date range'` | Accessible label for the trigger button                                  |
 
@@ -196,6 +197,7 @@ Individual component/directive inputs always take precedence over the global con
 | `calendarIcon`     | `'left' \| 'right' \| 'hidden'` | `'right'`    | Calendar icon position in the trigger button                                      |
 | `showApplyButton`  | `boolean`                       | `false`      | Show an Apply button inside the overlay                                           |
 | `closeOnSelect`    | `boolean`                       | `true`       | Automatically close the overlay after a complete range is selected or pre-defined |
+| `rangeMatchMode`   | `'day' \| 'exact'`              | `'day'`      | How selected ranges are matched to predefined labels — `'day'` ignores time, `'exact'` requires identical timestamps |
 
 ---
 
