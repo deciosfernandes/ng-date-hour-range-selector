@@ -213,4 +213,46 @@ readonly maxDate = new Date(this._now.getFullYear(), this._now.getMonth() + 1, 0
 
 &lt;!-- Override --drs-primary to re-theme the entire picker --&gt;</code></pre>
   </section>
+
+  <!-- ─── 9. Deferred emission (emitOn: 'close') ──────────────────────── -->
+  <section class="demo-section">
+    <h2>deferred emission · <code>emitOn="close"</code></h2>
+    <p class="demo-desc">
+      Set <code>emitOn="close"</code> to suppress intermediate emissions while the user is
+      adjusting dates and times. <code>rangeChange</code> (and the reactive form control) are
+      updated only when the overlay is dismissed — via backdrop click, Escape, or the Apply
+      button. Resetting always emits <code>null</code> immediately regardless of this setting.
+    </p>
+    <drs-date-range-picker
+      [formControl]="deferredControl"
+      emitOn="close"
+      [showApplyButton]="true"
+      [closeOnSelect]="false"
+      (rangeChange)="onDeferredRangeChange($event)"
+      ariaLabel="Deferred emission picker"
+    />
+
+    @if (lastDeferredEmitted(); as range) {
+      <div class="demo-output">
+        <strong>Last committed range (emitted on close):</strong><br />
+        Start: {{ range.start | date: 'medium' }}<br />
+        End: {{ range.end | date: 'medium' }}
+      </div>
+    } @else {
+      <div class="demo-output">
+        <em>No range committed yet — adjust dates / times and close the picker.</em>
+      </div>
+    }
+
+    <pre class="demo-code"><code>&lt;drs-date-range-picker
+  [formControl]="deferredControl"
+  emitOn="close"
+  [showApplyButton]="true"
+  [closeOnSelect]="false"
+  (rangeChange)="onDeferredRangeChange($event)"
+/&gt;
+
+&lt;!-- emitOn: 'change' (default) — emit on every selection
+     emitOn: 'close'            — defer until overlay is closed / Apply clicked --&gt;</code></pre>
+  </section>
 </main>
