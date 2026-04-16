@@ -91,23 +91,24 @@ export class MyComponent {
 
 ## Component inputs
 
-| Input              | Type                            | Default               | Description                                                              |
-| ------------------ | ------------------------------- | --------------------- | ------------------------------------------------------------------------ |
-| `showTime`         | `boolean`                       | `true`                | Show/hide the time picker section inside the overlay                     |
-| `timeFormat`       | `'12h' \| '24h'`                | `'24h'`               | Display format for the time pickers                                      |
-| `minuteStep`       | `number`                        | `1`                   | Minute increment/decrement step                                          |
-| `weekStartsOn`     | `0 \| 1`                        | `1`                   | First day of the week: `0` = Sunday, `1` = Monday                        |
-| `predefinedRanges` | `PredefinedRange[]`             | built-in              | Custom sidebar shortcuts; omit to use built-in defaults                  |
-| `minDate`          | `Date`                          | `undefined`           | Minimum selectable date (inclusive)                                      |
-| `maxDate`          | `Date`                          | `undefined`           | Maximum selectable date (inclusive)                                      |
-| `position`         | `ConnectedPosition[]`           | bottom-start          | CDK overlay positions array                                              |
-| `showResetButton`  | `boolean`                       | `true`                | Show or hide the reset button in the sidebar                             |
-| `calendarIcon`     | `'left' \| 'right' \| 'hidden'` | `'right'`             | Position of the calendar icon in the trigger button, or hide it entirely |
-| `showApplyButton`  | `boolean`                       | `false`               | Show an Apply button that commits the selection and closes the picker    |
-| `closeOnSelect`    | `boolean`                       | `true`                | Automatically close the picker after a complete range is selected        |
-| `rangeMatchMode`   | `'day' \| 'exact'`              | `'day'`               | How selected ranges are matched to predefined labels — `'day'` ignores time, `'exact'` requires identical timestamps |
-| `initialRange`     | `DateRange \| PredefinedRange`  | `undefined`           | Range or predefined-range factory to pre-select on component load        |
-| `ariaLabel`        | `string`                        | `'Select date range'` | Accessible label for the trigger button                                  |
+| Input              | Type                            | Default               | Description                                                                                                                                                                                                               |
+| ------------------ | ------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `showTime`         | `boolean`                       | `true`                | Show/hide the time picker section inside the overlay                                                                                                                                                                      |
+| `timeFormat`       | `'12h' \| '24h'`                | `'24h'`               | Display format for the time pickers                                                                                                                                                                                       |
+| `minuteStep`       | `number`                        | `1`                   | Minute increment/decrement step                                                                                                                                                                                           |
+| `weekStartsOn`     | `0 \| 1`                        | `1`                   | First day of the week: `0` = Sunday, `1` = Monday                                                                                                                                                                         |
+| `predefinedRanges` | `PredefinedRange[]`             | built-in              | Custom sidebar shortcuts; omit to use built-in defaults                                                                                                                                                                   |
+| `minDate`          | `Date`                          | `undefined`           | Minimum selectable date (inclusive)                                                                                                                                                                                       |
+| `maxDate`          | `Date`                          | `undefined`           | Maximum selectable date (inclusive)                                                                                                                                                                                       |
+| `position`         | `ConnectedPosition[]`           | bottom-start          | CDK overlay positions array                                                                                                                                                                                               |
+| `showResetButton`  | `boolean`                       | `true`                | Show or hide the reset button in the sidebar                                                                                                                                                                              |
+| `calendarIcon`     | `'left' \| 'right' \| 'hidden'` | `'right'`             | Position of the calendar icon in the trigger button, or hide it entirely                                                                                                                                                  |
+| `showApplyButton`  | `boolean`                       | `false`               | Show an Apply button that commits the selection and closes the picker                                                                                                                                                     |
+| `closeOnSelect`    | `boolean`                       | `true`                | Automatically close the picker after a complete range is selected                                                                                                                                                         |
+| `rangeMatchMode`   | `'day' \| 'exact'`              | `'day'`               | How selected ranges are matched to predefined labels — `'day'` ignores time, `'exact'` requires identical timestamps                                                                                                      |
+| `initialRange`     | `DateRange \| PredefinedRange`  | `undefined`           | Range or predefined-range factory to pre-select on component load                                                                                                                                                         |
+| `ariaLabel`        | `string`                        | `'Select date range'` | Accessible label for the trigger button                                                                                                                                                                                   |
+| `emitOn`           | `'change' \| 'close'`           | `'change'`            | Controls when `rangeChange` is emitted. `'change'` — emit immediately on every date/time selection (default). `'close'` — defer emission until the overlay is closed or Apply is clicked; reset always emits immediately. |
 
 All inputs can also be set globally via the `PICKER_CONFIG` token (see [Global configuration](#global-configuration----picker_config)).
 
@@ -183,21 +184,22 @@ Individual component/directive inputs always take precedence over the global con
 
 ### `PickerConfig` interface
 
-| Property           | Type                            | Default      | Description                                                                       |
-| ------------------ | ------------------------------- | ------------ | --------------------------------------------------------------------------------- |
-| `showTime`         | `boolean`                       | `true`       | Show the time-picker section                                                      |
-| `timeFormat`       | `'12h' \| '24h'`                | `'24h'`      | Hour format                                                                       |
-| `minuteStep`       | `number`                        | `1`          | Minute increment step                                                             |
-| `weekStartsOn`     | `0 \| 1`                        | `1`          | First day of week                                                                 |
-| `predefinedRanges` | `PredefinedRange[]`             | built-in     | Override all shortcuts globally                                                   |
-| `minDate`          | `Date`                          | —            | Global minimum date                                                               |
-| `maxDate`          | `Date`                          | —            | Global maximum date                                                               |
-| `position`         | `ConnectedPosition[]`           | bottom-start | CDK overlay positions                                                             |
-| `showResetButton`  | `boolean`                       | `true`       | Show or hide the reset button                                                     |
-| `calendarIcon`     | `'left' \| 'right' \| 'hidden'` | `'right'`    | Calendar icon position in the trigger button                                      |
-| `showApplyButton`  | `boolean`                       | `false`      | Show an Apply button inside the overlay                                           |
-| `closeOnSelect`    | `boolean`                       | `true`       | Automatically close the overlay after a complete range is selected or pre-defined |
-| `rangeMatchMode`   | `'day' \| 'exact'`              | `'day'`      | How selected ranges are matched to predefined labels — `'day'` ignores time, `'exact'` requires identical timestamps |
+| Property           | Type                            | Default      | Description                                                                                                                                                                                                     |
+| ------------------ | ------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `showTime`         | `boolean`                       | `true`       | Show the time-picker section                                                                                                                                                                                    |
+| `timeFormat`       | `'12h' \| '24h'`                | `'24h'`      | Hour format                                                                                                                                                                                                     |
+| `minuteStep`       | `number`                        | `1`          | Minute increment step                                                                                                                                                                                           |
+| `weekStartsOn`     | `0 \| 1`                        | `1`          | First day of week                                                                                                                                                                                               |
+| `predefinedRanges` | `PredefinedRange[]`             | built-in     | Override all shortcuts globally                                                                                                                                                                                 |
+| `minDate`          | `Date`                          | —            | Global minimum date                                                                                                                                                                                             |
+| `maxDate`          | `Date`                          | —            | Global maximum date                                                                                                                                                                                             |
+| `position`         | `ConnectedPosition[]`           | bottom-start | CDK overlay positions                                                                                                                                                                                           |
+| `showResetButton`  | `boolean`                       | `true`       | Show or hide the reset button                                                                                                                                                                                   |
+| `calendarIcon`     | `'left' \| 'right' \| 'hidden'` | `'right'`    | Calendar icon position in the trigger button                                                                                                                                                                    |
+| `showApplyButton`  | `boolean`                       | `false`      | Show an Apply button inside the overlay                                                                                                                                                                         |
+| `closeOnSelect`    | `boolean`                       | `true`       | Automatically close the overlay after a complete range is selected or pre-defined                                                                                                                               |
+| `rangeMatchMode`   | `'day' \| 'exact'`              | `'day'`      | How selected ranges are matched to predefined labels — `'day'` ignores time, `'exact'` requires identical timestamps                                                                                            |
+| `emitOn`           | `'change' \| 'close'`           | `'change'`   | Controls when `rangeChange` is emitted. `'change'` — emit immediately on every date/time selection. `'close'` — defer emission until the overlay is closed or Apply is clicked; reset always emits immediately. |
 
 ---
 
