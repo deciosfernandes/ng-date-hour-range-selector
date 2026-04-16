@@ -18,7 +18,9 @@ import {
 export class App {
   readonly rangeControl = new FormControl<DateRange | null>(null);
   readonly directiveControl = new FormControl<DateRange | null>(null);
+  readonly deferredControl = new FormControl<DateRange | null>(null);
   readonly lastEmitted = signal<DateRange | null>(null);
+  readonly lastDeferredEmitted = signal<DateRange | null>(null);
 
   private readonly picker = viewChild(DateRangePickerComponent);
 
@@ -71,6 +73,10 @@ export class App {
 
   onRangeChange(range: DateRange | null): void {
     this.lastEmitted.set(range);
+  }
+
+  onDeferredRangeChange(range: DateRange | null): void {
+    this.lastDeferredEmitted.set(range);
   }
 
   next(): void {

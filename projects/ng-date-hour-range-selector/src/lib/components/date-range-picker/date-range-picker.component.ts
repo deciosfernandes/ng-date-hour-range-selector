@@ -75,6 +75,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
   showApplyButton = input<boolean | undefined>(undefined);
   closeOnSelect = input<boolean | undefined>(undefined);
   rangeMatchMode = input<'day' | 'exact' | undefined>(undefined);
+  emitOn = input<'change' | 'close' | undefined>(undefined);
   /** Accessible label for the trigger button */
   ariaLabel = input<string>('Select date range');
   /** Initial range to pre-select on load. Accepts a DateRange or a PredefinedRange. */
@@ -136,6 +137,7 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
       showApplyButton: this.showApplyButton() ?? g.showApplyButton ?? false,
       closeOnSelect: this.closeOnSelect() ?? g.closeOnSelect ?? true,
       rangeMatchMode: (this.rangeMatchMode() ?? g.rangeMatchMode ?? 'day') as 'day' | 'exact',
+      emitOn: (this.emitOn() ?? g.emitOn ?? 'change') as 'change' | 'close',
     };
   });
 
@@ -162,6 +164,17 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
   protected readonly displayValue = computed(() => {
     const label = this.activeRangeLabel();
     if (label) return label;
+    // In deferred mode, reflect the in-progress selection while the overlay is open
+    if (this.resolvedConfig().emitOn === 'close' && this.isOpen()) {
+      const start = this.rangeStart();
+      const end = this.rangeEnd();
+      if (start && end) {
+        if (this.resolvedConfig().showTime && this.locale.formatRangeWithTime) {
+          return this.locale.formatRangeWithTime(start, end);
+        }
+        return this.locale.formatRange(start, end);
+      }
+    }
     const range = this.value();
     if (!range) return '';
     if (this.resolvedConfig().showTime && this.locale.formatRangeWithTime) {
@@ -222,6 +235,10 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
   }
 
   protected close(): void {
+    if (!this.isOpen()) return;
+    if (this.resolvedConfig().emitOn === 'close') {
+      this._commitDeferred();
+    }
     this.overlayRef?.detach();
     this.isOpen.set(false);
   }
@@ -290,7 +307,9 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     this.rangeStart.set(newStart);
     this.rangeEnd.set(newEnd);
     this.activeRangeLabel.set(this.matchPredefinedRange({ start: newStart, end: newEnd }));
-    this.commitValue({ start: newStart, end: newEnd });
+    if (this.resolvedConfig().emitOn === 'change') {
+      this.commitValue({ start: newStart, end: newEnd });
+    }
     if (this.resolvedConfig().closeOnSelect) this.close();
   }
 
@@ -302,7 +321,9 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     this.activeRangeLabel.set(range.label);
     this._viewYear.set(dr.start.getFullYear());
     this._viewMonth.set(dr.start.getMonth());
-    this.commitValue(dr);
+    if (this.resolvedConfig().emitOn === 'change') {
+      this.commitValue(dr);
+    }
     if (this.resolvedConfig().closeOnSelect) this.close();
   }
 
@@ -331,8 +352,10 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     const updated = new Date(start);
     updated.setHours(time.hour, time.minute, 0, 0);
     this.rangeStart.set(updated);
-    const end = this.rangeEnd() ?? this.value()?.end ?? null;
-    if (end) this.commitValue({ start: updated, end });
+    if (this.resolvedConfig().emitOn === 'change') {
+      const end = this.rangeEnd() ?? this.value()?.end ?? null;
+      if (end) this.commitValue({ start: updated, end });
+    }
   }
 
   protected onEndTimeChange(time: TimeValue): void {
@@ -345,8 +368,10 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     const updated = new Date(end);
     updated.setHours(time.hour, time.minute, 0, 0);
     this.rangeEnd.set(updated);
-    const start = this.rangeStart() ?? this.value()?.start ?? null;
-    if (start) this.commitValue({ start, end: updated });
+    if (this.resolvedConfig().emitOn === 'change') {
+      const start = this.rangeStart() ?? this.value()?.start ?? null;
+      if (start) this.commitValue({ start, end: updated });
+    }
   }
 
   protected onApply(): void {
@@ -449,6 +474,25 @@ export class DateRangePickerComponent implements ControlValueAccessor, OnInit, O
     this.value.set(range);
     this.onChange(range);
     this.rangeChange.emit(range);
+  }
+
+  /**
+   * Commits the pending selection when in `emitOn: 'close'` mode.
+   * If both rangeStart and rangeEnd are set, emits the complete range.
+   * If only rangeStart is set (incomplete selection), reverts the UI to the last committed value.
+   */
+  private _commitDeferred(): void {
+    const start = this.rangeStart();
+    const end = this.rangeEnd();
+    if (start && end) {
+      this.commitValue({ start, end });
+    } else if (start && !end) {
+      // Incomplete selection — revert UI to the last committed value
+      const v = this.value();
+      this.rangeStart.set(v?.start ?? null);
+      this.rangeEnd.set(v?.end ?? null);
+      this.activeRangeLabel.set(v ? this.matchPredefinedRange(v) : null);
+    }
   }
 
   private applyRange(range: DateRange): void {

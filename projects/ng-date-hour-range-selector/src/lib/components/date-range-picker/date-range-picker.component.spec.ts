@@ -666,4 +666,235 @@ describe('DateRangePickerComponent', () => {
       expect(component['activeRangeLabel']()).toBe('Jan 2024');
     });
   });
+
+  // ─── emitOn: 'change' (immediate mode) ────────────────────────────────
+
+  describe("emitOn: 'change' (immediate mode — default)", () => {
+    it("emitOn defaults to 'change'", () => {
+      expect(component['resolvedConfig']().emitOn).toBe('change');
+    });
+
+    it('emits on date selection (immediate mode)', () => {
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onDateSelect'](new Date(2024, 0, 5));
+      component['onDateSelect'](new Date(2024, 0, 10));
+
+      expect(emitted.length).toBe(1);
+    });
+
+    it('emits on time change when range is set (immediate mode)', () => {
+      component.writeValue({ start: new Date(2024, 0, 5, 8, 0), end: new Date(2024, 0, 10, 18, 0) });
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onStartTimeChange']({ hour: 9, minute: 30 });
+
+      expect(emitted.length).toBe(1);
+    });
+  });
+
+  // ─── emitOn: 'close' (deferred mode) ──────────────────────────────────
+
+  describe("emitOn: 'close' (deferred mode)", () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('emitOn', 'close');
+      fixture.componentRef.setInput('closeOnSelect', false);
+      fixture.detectChanges();
+    });
+
+    it("resolvedConfig reflects emitOn: 'close'", () => {
+      expect(component['resolvedConfig']().emitOn).toBe('close');
+    });
+
+    it('does NOT emit on date selection before close', () => {
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onDateSelect'](new Date(2024, 0, 5));
+      component['onDateSelect'](new Date(2024, 0, 10));
+
+      expect(emitted.length).toBe(0);
+    });
+
+    it('does NOT emit on predefined range selection before close', () => {
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onRangeSelect']({
+        label: 'Custom',
+        range: () => ({ start: new Date(2024, 2, 1), end: new Date(2024, 2, 31) }),
+      });
+
+      expect(emitted.length).toBe(0);
+    });
+
+    it('does NOT emit on start time change', () => {
+      component.writeValue({ start: new Date(2024, 0, 5, 8, 0), end: new Date(2024, 0, 10, 18, 0) });
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onStartTimeChange']({ hour: 9, minute: 30 });
+
+      expect(emitted.length).toBe(0);
+    });
+
+    it('does NOT emit on end time change', () => {
+      component.writeValue({ start: new Date(2024, 0, 5, 8, 0), end: new Date(2024, 0, 10, 18, 0) });
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onEndTimeChange']({ hour: 20, minute: 0 });
+
+      expect(emitted.length).toBe(0);
+    });
+
+    it('emits exactly once when picker is closed after date selection', () => {
+      component['open']();
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onDateSelect'](new Date(2024, 0, 5));
+      component['onDateSelect'](new Date(2024, 0, 10));
+
+      expect(emitted.length).toBe(0); // not yet emitted
+
+      component['close']();
+
+      expect(emitted.length).toBe(1);
+      expect((emitted[0] as DateRange).start.getDate()).toBe(5);
+      expect((emitted[0] as DateRange).end.getDate()).toBe(10);
+    });
+
+    it('emits with adjusted time when picker is closed after time change', () => {
+      component.writeValue({ start: new Date(2024, 0, 5, 8, 0), end: new Date(2024, 0, 10, 18, 0) });
+      component['open']();
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onStartTimeChange']({ hour: 9, minute: 30 });
+      component['onEndTimeChange']({ hour: 20, minute: 0 });
+
+      expect(emitted.length).toBe(0);
+
+      component['close']();
+
+      expect(emitted.length).toBe(1);
+      expect((emitted[0] as DateRange).start.getHours()).toBe(9);
+      expect((emitted[0] as DateRange).start.getMinutes()).toBe(30);
+      expect((emitted[0] as DateRange).end.getHours()).toBe(20);
+    });
+
+    it('emits on close after predefined range selection', () => {
+      component['open']();
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onRangeSelect']({
+        label: 'March',
+        range: () => ({ start: new Date(2024, 2, 1), end: new Date(2024, 2, 31) }),
+      });
+
+      expect(emitted.length).toBe(0);
+
+      component['close']();
+
+      expect(emitted.length).toBe(1);
+      expect((emitted[0] as DateRange).start.getMonth()).toBe(2);
+    });
+
+    it('does NOT emit on close when selection is incomplete (only start chosen)', () => {
+      component['open']();
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onDateSelect'](new Date(2024, 0, 5)); // only start
+
+      component['close']();
+
+      expect(emitted.length).toBe(0);
+    });
+
+    it('reverts UI to committed value when closed with incomplete selection', () => {
+      const initialRange = { start: new Date(2024, 0, 1), end: new Date(2024, 0, 31) };
+      component.writeValue(initialRange);
+      component['open']();
+
+      component['onDateSelect'](new Date(2024, 0, 15)); // starts new selection, clears rangeEnd
+
+      component['close']();
+
+      // value() should still be the originally committed range
+      expect(component.value()).toEqual(initialRange);
+      // And UI state should be reverted
+      expect(component['rangeStart']()?.getDate()).toBe(1);
+      expect(component['rangeEnd']()?.getDate()).toBe(31);
+    });
+
+    it('reset emits null immediately even in deferred mode', () => {
+      component.writeValue({ start: new Date(2024, 0, 5), end: new Date(2024, 0, 10) });
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onReset']();
+
+      expect(emitted.length).toBe(1);
+      expect(emitted[0]).toBeNull();
+    });
+
+    it('onApply commits and closes in deferred mode', () => {
+      component['open']();
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onDateSelect'](new Date(2024, 0, 3));
+      component['onDateSelect'](new Date(2024, 0, 8));
+
+      expect(emitted.length).toBe(0);
+
+      component['onApply']();
+
+      expect(component['isOpen']()).toBe(false);
+      expect(emitted.length).toBe(1);
+      expect((emitted[0] as DateRange).start.getDate()).toBe(3);
+    });
+
+    it('emits only once per close (no double-emit on apply)', () => {
+      component['open']();
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onDateSelect'](new Date(2024, 0, 3));
+      component['onDateSelect'](new Date(2024, 0, 8));
+      component['onApply']();
+
+      expect(emitted.length).toBe(1);
+    });
+
+    it('with closeOnSelect:true emits once via the auto-close triggered by date selection', () => {
+      fixture.componentRef.setInput('closeOnSelect', true);
+      fixture.detectChanges();
+      component['open']();
+
+      const emitted: (DateRange | null)[] = [];
+      component.rangeChange.subscribe((v) => emitted.push(v));
+
+      component['onDateSelect'](new Date(2024, 0, 3));
+      component['onDateSelect'](new Date(2024, 0, 8)); // triggers auto-close → commits
+
+      expect(emitted.length).toBe(1);
+      expect(component['isOpen']()).toBe(false);
+    });
+  });
 });

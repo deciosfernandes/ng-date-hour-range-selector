@@ -36,4 +36,13 @@ export interface PickerConfig {
    * - `'exact'` — requires the start and end timestamps to match exactly.
    */
   rangeMatchMode?: 'day' | 'exact';
+  /**
+   * Controls when the selected range value is emitted / committed to the form control.
+   * - `'change'` (default) — emit immediately on every selection (dates, time changes, predefined ranges).
+   * - `'close'` — defer emission; only emit when the picker is closed (backdrop click, Escape,
+   *   or the Apply button). Time and date adjustments update the UI but do not call `onChange`
+   *   or emit `rangeChange` until the overlay is dismissed.
+   *   Reset always emits `null` immediately, regardless of this setting.
+   */
+  emitOn?: 'change' | 'close';
 }

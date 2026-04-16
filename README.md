@@ -139,6 +139,7 @@ export class MyComponent {
 | `showApplyButton`  | `boolean`                       | `false`               | Show an Apply button inside the overlay that closes it when clicked               |
 | `closeOnSelect`    | `boolean`                       | `true`                | Automatically close the overlay after a complete range is selected or pre-defined |
 | `rangeMatchMode`   | `'day' \| 'exact'`              | `'day'`               | How selected ranges are matched to predefined labels — `'day'` ignores time, `'exact'` requires identical timestamps |
+| `emitOn`           | `'change' \| 'close'`           | `'change'`            | Controls when `rangeChange` is emitted. `'change'` — emit immediately on every date/time selection (default). `'close'` — defer emission until the overlay is closed or Apply is clicked; reset always emits immediately. |
 | `initialRange`     | `DateRange \| PredefinedRange`  | —                     | Range or predefined-range factory to pre-select on component load                 |
 | `ariaLabel`        | `string`                        | `'Select date range'` | Accessible label for the trigger button                                           |
 
@@ -233,6 +234,7 @@ Individual component/directive inputs always take precedence over the global con
 | `showApplyButton`  | `boolean`                       | `false`      | Show an Apply button inside the overlay                                           |
 | `closeOnSelect`    | `boolean`                       | `true`       | Automatically close the overlay after a complete range is selected or pre-defined |
 | `rangeMatchMode`   | `'day' \| 'exact'`              | `'day'`      | How selected ranges are matched to predefined labels — `'day'` ignores time, `'exact'` requires identical timestamps |
+| `emitOn`           | `'change' \| 'close'`           | `'change'`   | Controls when `rangeChange` is emitted. `'change'` — emit immediately on every date/time selection. `'close'` — defer emission until the overlay is closed or Apply is clicked; reset always emits immediately. |
 
 ---
 
