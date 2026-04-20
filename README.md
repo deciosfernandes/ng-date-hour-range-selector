@@ -145,9 +145,10 @@ export class MyComponent {
 
 ### Output
 
-| Output        | Payload             | Description                                           |
-| ------------- | ------------------- | ----------------------------------------------------- |
-| `rangeChange` | `DateRange \| null` | Emitted when a complete range is committed or cleared |
+| Output               | Payload                   | Description                                                                                                                                                 |
+| -------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rangeChange`        | `DateRange \| null`       | Emitted when a complete range is committed or cleared                                                                                                       |
+| `grafanaRangeChange` | `GrafanaTimeRange \| null` | Emitted alongside `rangeChange`. Emits the `grafanaRange` object from the matching `PredefinedRange` when available; otherwise falls back to ISO strings (`{ from: start.toISOString(), to: end.toISOString() }`). Emits `null` when the picker is reset. |
 
 ### Public methods
 
@@ -189,11 +190,22 @@ interface DateRange {
   end: Date;
 }
 
+interface GrafanaTimeRange {
+  from: string;
+  to: string;
+}
+
 interface PredefinedRange {
   /** Label shown in the sidebar */
   label: string;
   /** Factory function — called on each click to produce a fresh range */
   range: () => DateRange;
+  /**
+   * Optional Grafana-style relative time strings.
+   * When set, `grafanaRangeChange` emits this object instead of ISO strings.
+   * Example: `{ from: 'now/d', to: 'now/d' }` for "Today".
+   */
+  grafanaRange?: GrafanaTimeRange;
 }
 ```
 
@@ -304,20 +316,28 @@ providers: [{ provide: PICKER_LOCALE, useValue: ptBrLocale }];
 
 The sidebar shows these built-in shortcuts by default:
 
-- Today
-- Yesterday
-- This week / Last week
-- This month / Last month
-- This quarter / Last quarter
+| Label          | Grafana `from`    | Grafana `to`      |
+| -------------- | ----------------- | ----------------- |
+| Today          | `now/d`           | `now/d`           |
+| Yesterday      | `now-1d/d`        | `now-1d/d`        |
+| This week      | `now/w`           | `now/w`           |
+| Last week      | `now-1w/w`        | `now-1w/w`        |
+| This month     | `now/M`           | `now/M`           |
+| Last month     | `now-1M/M`        | `now-1M/M`        |
+| This quarter   | —                 | —                 |
+| Last quarter   | —                 | —                 |
 
-Replace them per-picker via the `predefinedRanges` input, or globally via `PICKER_CONFIG`:
+Selecting one of the built-in shortcuts with a Grafana mapping will cause `grafanaRangeChange` to emit the corresponding `{ from, to }` object. Quarters do not have a standard Grafana equivalent, so they fall back to ISO strings.
+
+Replace them per-picker via the `predefinedRanges` input, or globally via `PICKER_CONFIG`. You can optionally attach a `grafanaRange` to any custom shortcut:
 
 ```ts
-import { PredefinedRange } from 'ng-date-hour-range-selector';
+import { GrafanaTimeRange, PredefinedRange } from 'ng-date-hour-range-selector';
 
 const customRanges: PredefinedRange[] = [
   {
     label: 'Last 7 days',
+    grafanaRange: { from: 'now-7d', to: 'now' },
     range: () => {
       const end = new Date();
       const start = new Date();
@@ -329,6 +349,7 @@ const customRanges: PredefinedRange[] = [
   },
   {
     label: 'Last 30 days',
+    grafanaRange: { from: 'now-30d', to: 'now' },
     range: () => {
       const end = new Date();
       const start = new Date();
@@ -476,7 +497,7 @@ export { TimePickerComponent } from 'ng-date-hour-range-selector';
 export { PredefinedRangesComponent } from 'ng-date-hour-range-selector';
 
 // Models
-export type { DateRange, PredefinedRange } from 'ng-date-hour-range-selector';
+export type { DateRange, GrafanaTimeRange, PredefinedRange } from 'ng-date-hour-range-selector';
 export type { PickerConfig } from 'ng-date-hour-range-selector';
 export type { PickerLocale } from 'ng-date-hour-range-selector';
 export type { TimeValue } from 'ng-date-hour-range-selector';

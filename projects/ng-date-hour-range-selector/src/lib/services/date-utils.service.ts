@@ -138,6 +138,7 @@ export class DateUtilsService {
     return [
       {
         label: 'Today',
+        grafanaRange: { from: 'now/d', to: 'now/d' },
         range: () => {
           const now = new Date();
           return { start: this.startOfDay(now), end: this.endOfDay(now) };
@@ -145,6 +146,7 @@ export class DateUtilsService {
       },
       {
         label: 'Yesterday',
+        grafanaRange: { from: 'now-1d/d', to: 'now-1d/d' },
         range: () => {
           const yesterday = this.addDays(new Date(), -1);
           return { start: this.startOfDay(yesterday), end: this.endOfDay(yesterday) };
@@ -152,6 +154,7 @@ export class DateUtilsService {
       },
       {
         label: 'This week',
+        grafanaRange: { from: 'now/w', to: 'now/w' },
         range: () => {
           const now = new Date();
           return {
@@ -162,6 +165,7 @@ export class DateUtilsService {
       },
       {
         label: 'Last week',
+        grafanaRange: { from: 'now-1w/w', to: 'now-1w/w' },
         range: () => {
           const lastWeek = this.addDays(new Date(), -7);
           return {
@@ -172,6 +176,7 @@ export class DateUtilsService {
       },
       {
         label: 'This month',
+        grafanaRange: { from: 'now/M', to: 'now/M' },
         range: () => {
           const now = new Date();
           return { start: this.startOfMonth(now), end: this.endOfMonth(now) };
@@ -179,6 +184,7 @@ export class DateUtilsService {
       },
       {
         label: 'Last month',
+        grafanaRange: { from: 'now-1M/M', to: 'now-1M/M' },
         range: () => {
           const lastMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1);
           return { start: this.startOfMonth(lastMonth), end: this.endOfMonth(lastMonth) };

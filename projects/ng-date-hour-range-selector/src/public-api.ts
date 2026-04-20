@@ -4,7 +4,7 @@
 
 // Models
 export type { PickerConfig } from './lib/models/config.model';
-export type { DateRange, PredefinedRange } from './lib/models/date-range.model';
+export type { DateRange, GrafanaTimeRange, PredefinedRange } from './lib/models/date-range.model';
 export type { PickerLocale } from './lib/models/locale.model';
 
 // Tokens
