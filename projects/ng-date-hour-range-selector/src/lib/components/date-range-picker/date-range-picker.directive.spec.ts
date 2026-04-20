@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { DateRange, PredefinedRange } from '../../models/date-range.model';
+import { DateRange, GrafanaTimeRange, PredefinedRange } from '../../models/date-range.model';
 import { DEFAULT_PICKER_CONFIG, PICKER_CONFIG } from '../../tokens/config.token';
 import { DEFAULT_PICKER_LOCALE, PICKER_LOCALE } from '../../tokens/locale.token';
 import { DateRangePickerDirective } from './date-range-picker.directive';
@@ -158,6 +158,97 @@ describe('DateRangePickerDirective', () => {
       const emitted: (DateRange | null)[] = [];
       directive.rangeChange.subscribe((v) => emitted.push(v));
       directive['onReset']();
+
+      expect(emitted.length).toBe(1);
+      expect(emitted[0]).toBeNull();
+    });
+  });
+
+  // ─── grafanaRangeChange output ─────────────────────────────────────────
+
+  describe('grafanaRangeChange output', () => {
+    it('emits Grafana strings when a predefined range with grafanaRange is selected', () => {
+      const emitted: (GrafanaTimeRange | null)[] = [];
+      directive.grafanaRangeChange.subscribe((v) => emitted.push(v));
+
+      directive['onRangeSelect']({
+        label: 'Today',
+        grafanaRange: { from: 'now/d', to: 'now/d' },
+        range: () => ({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 1, 23, 59) }),
+      });
+
+      expect(emitted.length).toBe(1);
+      expect(emitted[0]).toEqual({ from: 'now/d', to: 'now/d' });
+    });
+
+    it('emits ISO strings when a predefined range without grafanaRange is selected', () => {
+      const emitted: (GrafanaTimeRange | null)[] = [];
+      directive.grafanaRangeChange.subscribe((v) => emitted.push(v));
+
+      const start = new Date(2024, 0, 1, 0, 0, 0, 0);
+      const end = new Date(2024, 0, 7, 23, 59, 0, 0);
+      directive['onRangeSelect']({
+        label: 'Custom',
+        range: () => ({ start, end }),
+      });
+
+      expect(emitted.length).toBe(1);
+      expect(emitted[0]).toEqual({ from: start.toISOString(), to: end.toISOString() });
+    });
+
+    it('emits ISO strings when a manual date selection is made', () => {
+      const emitted: (GrafanaTimeRange | null)[] = [];
+      directive.grafanaRangeChange.subscribe((v) => emitted.push(v));
+
+      directive['onDateSelect'](new Date(2024, 0, 3));
+      directive['onDateSelect'](new Date(2024, 0, 8));
+
+      expect(emitted.length).toBe(1);
+      const value = directive.value()!;
+      expect(emitted[0]).toEqual({ from: value.start.toISOString(), to: value.end.toISOString() });
+    });
+
+    it('emits null when reset is called', () => {
+      directive['onRangeSelect']({
+        label: 'Today',
+        grafanaRange: { from: 'now/d', to: 'now/d' },
+        range: () => ({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 1, 23, 59) }),
+      });
+
+      const emitted: (GrafanaTimeRange | null)[] = [];
+      directive.grafanaRangeChange.subscribe((v) => emitted.push(v));
+      directive['onReset']();
+
+      expect(emitted.length).toBe(1);
+      expect(emitted[0]).toBeNull();
+    });
+
+    it('emits Grafana strings when setRange matches a predefined range with grafanaRange', () => {
+      const emitted: (GrafanaTimeRange | null)[] = [];
+
+      const customFixture = TestBed.createComponent(HostWithCustomRanges);
+      customFixture.componentInstance.ranges = [
+        {
+          label: 'Today',
+          grafanaRange: { from: 'now/d', to: 'now/d' },
+          range: () => ({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 1, 23, 59) }),
+        },
+      ];
+      customFixture.detectChanges();
+      const customDirective = getDirective(customFixture);
+      customDirective.grafanaRangeChange.subscribe((v) => emitted.push(v));
+
+      customDirective.setRange({ start: new Date(2024, 0, 1), end: new Date(2024, 0, 1, 23, 59) });
+
+      expect(emitted.length).toBe(1);
+      expect(emitted[0]).toEqual({ from: 'now/d', to: 'now/d' });
+    });
+
+    it('emits null via setRange(null)', () => {
+      const emitted: (GrafanaTimeRange | null)[] = [];
+      directive.grafanaRangeChange.subscribe((v) => emitted.push(v));
+
+      directive.setRange(null);
 
       expect(emitted.length).toBe(1);
       expect(emitted[0]).toBeNull();
