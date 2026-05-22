@@ -119,7 +119,7 @@ export interface TimeValue {
   `,
 })
 export class TimePickerComponent {
-  private static readonly ONE_OR_TWO_DIGITS = /^\d{1,2}$/;
+  private static readonly VALID_TIME_INPUT_PATTERN = /^\d{1,2}$/;
   private static nextId = 0;
   private readonly id = TimePickerComponent.nextId++;
   protected readonly hourHelpId = `drs-time-hour-help-${this.id}`;
@@ -243,13 +243,17 @@ export class TimePickerComponent {
     clamp: boolean,
   ): number | null {
     const trimmed = raw.trim();
-    if (!TimePickerComponent.ONE_OR_TWO_DIGITS.test(trimmed)) return null;
+    if (!this.isValidNumericInput(trimmed)) return null;
 
     const parsed = Number.parseInt(trimmed, 10);
     if (Number.isNaN(parsed)) return null;
     if (clamp) return Math.min(max, Math.max(min, parsed));
     if (parsed < min || parsed > max) return null;
     return parsed;
+  }
+
+  private isValidNumericInput(value: string): boolean {
+    return TimePickerComponent.VALID_TIME_INPUT_PATTERN.test(value);
   }
 
   private emit(hour: number, minute: number): void {
