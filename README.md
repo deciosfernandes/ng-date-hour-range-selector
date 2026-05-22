@@ -14,6 +14,7 @@ A flexible Angular **date / date-time range selector** built on Angular CDK Over
 - Date **and** time range selection, or date-only mode
 - 12-hour (AM/PM) and 24-hour time formats
 - Configurable minute step
+- Optional manual time inputs for direct hour/minute editing
 - Sidebar with predefined range shortcuts (Today, Yesterday, This/Last Week…)
 - Configurable calendar icon position (`left`, `right`, or hidden)
 - Optional reset button in the sidebar
@@ -129,6 +130,7 @@ export class MyComponent {
 | `showTime`         | `boolean`                       | `true`                | Show the time-picker section                                                      |
 | `timeFormat`       | `'12h' \| '24h'`                | `'24h'`               | 12-hour (AM/PM) or 24-hour format                                                 |
 | `minuteStep`       | `number`                        | `1`                   | Minute increment step                                                             |
+| `allowManualTimeInput` | `boolean`                   | `false`               | Enable editable hour/minute text inputs in the time picker                       |
 | `weekStartsOn`     | `0 \| 1`                        | `1`                   | First day of week — `0` Sunday, `1` Monday                                        |
 | `predefinedRanges` | `PredefinedRange[]`             | built-in              | Sidebar shortcut definitions                                                      |
 | `minDate`          | `Date`                          | —                     | Minimum selectable date (inclusive)                                               |
@@ -224,6 +226,7 @@ Individual component/directive inputs always take precedence over the global con
 | `showTime`         | `boolean`                       | `true`       | Show the time-picker section                                                      |
 | `timeFormat`       | `'12h' \| '24h'`                | `'24h'`      | Hour format                                                                       |
 | `minuteStep`       | `number`                        | `1`          | Minute increment step                                                             |
+| `allowManualTimeInput` | `boolean`                   | `false`      | Enable editable hour/minute text inputs in the time picker                       |
 | `weekStartsOn`     | `0 \| 1`                        | `1`          | First day of week                                                                 |
 | `predefinedRanges` | `PredefinedRange[]`             | built-in     | Override all shortcuts globally                                                   |
 | `minDate`          | `Date`                          | —            | Global minimum date                                                               |

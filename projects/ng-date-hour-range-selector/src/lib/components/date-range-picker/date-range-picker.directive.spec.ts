@@ -454,7 +454,14 @@ describe('DateRangePickerDirective', () => {
       expect(cfg.showTime).toBe(true);
       expect(cfg.timeFormat).toBe('24h');
       expect(cfg.minuteStep).toBe(1);
+      expect(cfg.allowManualTimeInput).toBe(false);
       expect(cfg.weekStartsOn).toBe(1);
+    });
+
+    it('allowManualTimeInput can be overridden via input', () => {
+      fixture.componentRef.setInput('allowManualTimeInput', true);
+      fixture.detectChanges();
+      expect(directive['resolvedConfig']().allowManualTimeInput).toBe(true);
     });
   });
 
