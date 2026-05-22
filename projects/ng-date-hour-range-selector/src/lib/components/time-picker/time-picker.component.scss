@@ -29,7 +29,7 @@
 }
 
 .drs-time__input {
-  width: 2.4ch;
+  min-width: 2.4ch;
   border: 1px solid var(--drs-border, rgba(255, 255, 255, 0.14));
   border-radius: var(--drs-radius-sm, 4px);
   background: var(--drs-input-bg, transparent);
@@ -133,7 +133,7 @@
 
   .drs-time__input {
     font-size: calc(var(--drs-time-font-size, 1.375rem) * 1.1);
-    width: 2.8ch;
+    min-width: 2.8ch;
     min-height: 44px;
   }
 
