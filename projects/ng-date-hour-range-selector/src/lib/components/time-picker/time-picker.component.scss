@@ -4,6 +4,7 @@
 
 .drs-time {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 4px;
   padding: 12px 16px;
@@ -26,6 +27,36 @@
   color: var(--drs-text, #ffffff);
   min-width: 2ch;
   text-align: center;
+}
+
+.drs-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.drs-time__input {
+  box-sizing: content-box;
+  width: 2ch;
+  border: 1px solid var(--drs-border, rgba(255, 255, 255, 0.14));
+  border-radius: var(--drs-radius-sm, 4px);
+  background: var(--drs-input-bg, transparent);
+  color: var(--drs-text, #ffffff);
+  font-size: var(--drs-time-font-size, 1.375rem);
+  font-weight: 500;
+  text-align: center;
+  padding: 2px;
+
+  &:focus-visible {
+    outline: 2px solid var(--drs-primary, #f97316);
+    outline-offset: 1px;
+  }
 }
 
 /* ─── Colon separator ──────────────────────────────────────────────────────── */
@@ -112,6 +143,11 @@
   .drs-time__value {
     font-size: calc(var(--drs-time-font-size, 1.375rem) * 1.1);
     min-width: 2.5ch;
+  }
+
+  .drs-time__input {
+    font-size: calc(var(--drs-time-font-size, 1.375rem) * 1.1);
+    min-height: 44px;
   }
 
   .drs-time__sep {

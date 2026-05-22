@@ -376,6 +376,7 @@ describe('DateRangePickerComponent', () => {
       expect(cfg.showTime).toBe(true);
       expect(cfg.timeFormat).toBe('24h');
       expect(cfg.minuteStep).toBe(1);
+      expect(cfg.allowManualTimeInput).toBe(false);
       expect(cfg.weekStartsOn).toBe(1);
     });
 
@@ -387,6 +388,12 @@ describe('DateRangePickerComponent', () => {
       const cfg = component['resolvedConfig']();
       expect(cfg.showTime).toBe(false);
       expect(cfg.timeFormat).toBe('24h');
+    });
+
+    it('allowManualTimeInput can be overridden via input', () => {
+      fixture.componentRef.setInput('allowManualTimeInput', true);
+      fixture.detectChanges();
+      expect(component['resolvedConfig']().allowManualTimeInput).toBe(true);
     });
 
     it('closeOnSelect defaults to true', () => {

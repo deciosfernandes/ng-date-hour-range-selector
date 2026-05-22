@@ -71,6 +71,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
   showTime = input<boolean | undefined>(undefined);
   timeFormat = input<'12h' | '24h' | undefined>(undefined);
   minuteStep = input<number | undefined>(undefined);
+  allowManualTimeInput = input<boolean | undefined>(undefined);
   predefinedRanges = input<PredefinedRange[] | undefined>(undefined);
   minDate = input<Date | undefined>(undefined);
   maxDate = input<Date | undefined>(undefined);
@@ -121,6 +122,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
       showTime: this.showTime() ?? g.showTime ?? true,
       timeFormat: (this.timeFormat() ?? g.timeFormat ?? '24h') as '12h' | '24h',
       minuteStep: this.minuteStep() ?? g.minuteStep ?? 1,
+      allowManualTimeInput: this.allowManualTimeInput() ?? g.allowManualTimeInput ?? false,
       weekStartsOn: (this.weekStartsOn() ?? g.weekStartsOn ?? 1) as 0 | 1,
       predefinedRanges: this.predefinedRanges() ?? g.predefinedRanges,
       minDate: this.minDate() ?? (g as PickerConfig).minDate ?? null,
@@ -146,6 +148,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
       showTime: c.showTime,
       timeFormat: c.timeFormat,
       minuteStep: c.minuteStep,
+      allowManualTimeInput: c.allowManualTimeInput,
       weekStartsOn: c.weekStartsOn,
       showResetButton: c.showResetButton,
       showApplyButton: c.showApplyButton,

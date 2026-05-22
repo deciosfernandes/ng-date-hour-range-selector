@@ -16,6 +16,7 @@ export interface ResolvedPickerConfig {
   showTime: boolean;
   timeFormat: '12h' | '24h';
   minuteStep: number;
+  allowManualTimeInput: boolean;
   weekStartsOn: 0 | 1;
   showResetButton: boolean;
   showApplyButton: boolean;

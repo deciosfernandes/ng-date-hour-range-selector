@@ -11,7 +11,12 @@ describe('TimePickerComponent', () => {
   function createFixture(
     hour: number,
     minute: number,
-    options: { timeFormat?: '12h' | '24h'; minuteStep?: number; ariaLabel?: string } = {},
+    options: {
+      timeFormat?: '12h' | '24h';
+      minuteStep?: number;
+      allowManualTimeInput?: boolean;
+      ariaLabel?: string;
+    } = {},
   ): void {
     fixture = TestBed.createComponent(TimePickerComponent);
     component = fixture.componentInstance;
@@ -23,6 +28,8 @@ describe('TimePickerComponent', () => {
       fixture.componentRef.setInput('timeFormat', options.timeFormat);
     if (options.minuteStep !== undefined)
       fixture.componentRef.setInput('minuteStep', options.minuteStep);
+    if (options.allowManualTimeInput !== undefined)
+      fixture.componentRef.setInput('allowManualTimeInput', options.allowManualTimeInput);
     if (options.ariaLabel !== undefined)
       fixture.componentRef.setInput('ariaLabel', options.ariaLabel);
     fixture.detectChanges();
@@ -39,6 +46,19 @@ describe('TimePickerComponent', () => {
   function clickBtn(ariaLabel: string): void {
     const btn = el.querySelector<HTMLButtonElement>(`[aria-label="${ariaLabel}"]`)!;
     btn.click();
+    fixture.detectChanges();
+  }
+
+  function changeInput(ariaLabel: string, value: string, eventName: 'input' | 'blur' = 'input'): void {
+    const inputEl = el.querySelector<HTMLInputElement>(`input[aria-label="${ariaLabel}"]`)!;
+    inputEl.value = value;
+    inputEl.dispatchEvent(new Event(eventName));
+    fixture.detectChanges();
+  }
+
+  function keydownInput(ariaLabel: string, key: string): void {
+    const inputEl = el.querySelector<HTMLInputElement>(`input[aria-label="${ariaLabel}"]`)!;
+    inputEl.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
     fixture.detectChanges();
   }
 
@@ -229,6 +249,134 @@ describe('TimePickerComponent', () => {
 
       // 50 + 15 = 65 → hour+1, minute = 5
       expect(emitted[0]).toEqual({ hour: 11, minute: 5 });
+    });
+  });
+
+  // ─── Manual input ───────────────────────────────────────────────────────
+
+  describe('manual input', () => {
+    it('keeps read-only values by default', () => {
+      createFixture(10, 30);
+      expect(el.querySelectorAll('input.drs-time__input').length).toBe(0);
+      expect(el.querySelectorAll('.drs-time__value').length).toBe(2);
+    });
+
+    it('shows editable hour and minute inputs when enabled', () => {
+      createFixture(10, 30, { allowManualTimeInput: true });
+      expect(el.querySelectorAll('input.drs-time__input').length).toBe(2);
+      expect(el.querySelectorAll('.drs-time__value').length).toBe(0);
+    });
+
+    it('emits updated 24h hour on manual hour change', () => {
+      createFixture(10, 30, { timeFormat: '24h', allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      changeInput('Hour (0 to 23)', '15');
+
+      expect(emitted[0]).toEqual({ hour: 15, minute: 30 });
+    });
+
+    it('preserves AM/PM when editing hour in 12h mode', () => {
+      createFixture(14, 30, { timeFormat: '12h', allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      changeInput('Hour (1 to 12)', '11');
+
+      expect(emitted[0]).toEqual({ hour: 23, minute: 30 });
+    });
+
+    it('clamps out-of-range minute values on blur', () => {
+      createFixture(10, 30, { allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      changeInput('Minute (0 to 59)', '99', 'blur');
+
+      expect(emitted[0]).toEqual({ hour: 10, minute: 59 });
+    });
+
+    it('clamps out-of-range hour values on blur in 24h mode', () => {
+      createFixture(10, 30, { timeFormat: '24h', allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      changeInput('Hour (0 to 23)', '99', 'blur');
+
+      expect(emitted[0]).toEqual({ hour: 23, minute: 30 });
+    });
+
+    it('accepts two-digit hour by not padding before second keystroke (24h)', () => {
+      createFixture(10, 30, { timeFormat: '24h', allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      changeInput('Hour (0 to 23)', '2');
+      changeInput('Hour (0 to 23)', '22');
+
+      expect(emitted[emitted.length - 1]).toEqual({ hour: 22, minute: 30 });
+    });
+
+    it('accepts two-digit minute without premature padding', () => {
+      createFixture(10, 5, { allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      changeInput('Minute (0 to 59)', '4');
+      changeInput('Minute (0 to 59)', '45');
+
+      expect(emitted[emitted.length - 1]).toEqual({ hour: 10, minute: 45 });
+    });
+
+    it('increments hour on ArrowUp with wraparound 23→0', () => {
+      createFixture(23, 0, { timeFormat: '24h', allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      keydownInput('Hour (0 to 23)', 'ArrowUp');
+
+      expect(emitted[0]).toEqual({ hour: 0, minute: 0 });
+    });
+
+    it('decrements hour on ArrowDown with wraparound 0→23', () => {
+      createFixture(0, 0, { timeFormat: '24h', allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      keydownInput('Hour (0 to 23)', 'ArrowDown');
+
+      expect(emitted[0]).toEqual({ hour: 23, minute: 0 });
+    });
+
+    it('increments minute on ArrowUp with wraparound 59→0 and carries hour', () => {
+      createFixture(10, 59, { allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      keydownInput('Minute (0 to 59)', 'ArrowUp');
+
+      expect(emitted[0]).toEqual({ hour: 11, minute: 0 });
+    });
+
+    it('decrements minute on ArrowDown with wraparound 0→59 and borrows hour', () => {
+      createFixture(10, 0, { allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      keydownInput('Minute (0 to 59)', 'ArrowDown');
+
+      expect(emitted[0]).toEqual({ hour: 9, minute: 59 });
+    });
+
+    it('clamps out-of-range hour values on blur in 12h mode preserving meridiem', () => {
+      createFixture(14, 30, { timeFormat: '12h', allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      changeInput('Hour (1 to 12)', '99', 'blur');
+
+      expect(emitted[0]).toEqual({ hour: 12, minute: 30 });
     });
   });
 

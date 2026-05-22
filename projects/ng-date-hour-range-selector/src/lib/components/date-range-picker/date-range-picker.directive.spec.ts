@@ -37,6 +37,14 @@ class HostWithCustomRanges {
   ranges: PredefinedRange[] = [];
 }
 
+@Component({
+  template: `<input drsDateRangePicker [formControl]="control" [allowManualTimeInput]="true" />`,
+  imports: [DateRangePickerDirective, ReactiveFormsModule],
+})
+class HostWithManualTimeInput {
+  control = new FormControl<DateRange | null>(null);
+}
+
 // ─── Helper ─────────────────────────────────────────────────────────────────
 
 function getDirective(fixture: ComponentFixture<unknown>): DateRangePickerDirective {
@@ -55,7 +63,7 @@ describe('DateRangePickerDirective', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HostComponent, HostWithInitialRange, HostWithCustomRanges, ReactiveFormsModule],
+      imports: [HostComponent, HostWithInitialRange, HostWithCustomRanges, HostWithManualTimeInput, ReactiveFormsModule],
       providers: [
         { provide: PICKER_LOCALE, useValue: DEFAULT_PICKER_LOCALE },
         { provide: PICKER_CONFIG, useValue: DEFAULT_PICKER_CONFIG },
@@ -454,8 +462,17 @@ describe('DateRangePickerDirective', () => {
       expect(cfg.showTime).toBe(true);
       expect(cfg.timeFormat).toBe('24h');
       expect(cfg.minuteStep).toBe(1);
+      expect(cfg.allowManualTimeInput).toBe(false);
       expect(cfg.weekStartsOn).toBe(1);
     });
+
+    it('allowManualTimeInput can be overridden via input', () => {
+      const f = TestBed.createComponent(HostWithManualTimeInput);
+      f.detectChanges();
+      const d = getDirective(f);
+      expect(d['resolvedConfig']().allowManualTimeInput).toBe(true);
+    });
+
   });
 
   // ─── open / close overlay ─────────────────────────────────────────────
