@@ -34,17 +34,14 @@ export interface TimeValue {
             maxlength="2"
             [value]="displayHour()"
             [attr.aria-label]="timeFormat() === '12h' ? 'Hour (1 to 12)' : 'Hour (0 to 23)'"
-            [attr.aria-describedby]="hourHelpId"
-            (change)="onHourInputChange($event)"
-            (blur)="onHourInputBlur($event)"
-          />
-          <span class="drs-visually-hidden" [id]="hourHelpId">
-            {{
+            [attr.aria-description]="
               timeFormat() === '12h'
                 ? 'Enter an hour between 1 and 12. Use the increment and decrement buttons for step changes.'
                 : 'Enter an hour between 0 and 23. Use the increment and decrement buttons for step changes.'
-            }}
-          </span>
+            "
+            (change)="onHourInputChange($event)"
+            (blur)="onHourInputBlur($event)"
+          />
         } @else {
           <span class="drs-time__value" aria-live="polite">{{ displayHour() }}</span>
         }
@@ -80,13 +77,10 @@ export interface TimeValue {
             maxlength="2"
             [value]="displayMinute()"
             aria-label="Minute (0 to 59)"
-            [attr.aria-describedby]="minuteHelpId"
+            aria-description="Enter minutes between 0 and 59. Use the increment and decrement buttons for step changes."
             (change)="onMinuteInputChange($event)"
             (blur)="onMinuteInputBlur($event)"
           />
-          <span class="drs-visually-hidden" [id]="minuteHelpId">
-            Enter minutes between 0 and 59. Use the increment and decrement buttons for step changes.
-          </span>
         } @else {
           <span class="drs-time__value" aria-live="polite">{{ displayMinute() }}</span>
         }
@@ -120,10 +114,6 @@ export interface TimeValue {
 })
 export class TimePickerComponent {
   private static readonly VALID_TIME_INPUT_PATTERN = /^\d{1,2}$/;
-  private static nextId = 0;
-  private readonly id = TimePickerComponent.nextId++;
-  protected readonly hourHelpId = `drs-time-hour-help-${this.id}`;
-  protected readonly minuteHelpId = `drs-time-minute-help-${this.id}`;
   protected readonly locale = inject(PICKER_LOCALE);
 
   // ─── Inputs ──────────────────────────────────────────────────────────────
@@ -187,27 +177,19 @@ export class TimePickerComponent {
   }
 
   protected onHourInputChange(event: Event): void {
-    this.updateHourFromEvent(event, false);
+    this.updateHourFromText((event.target as HTMLInputElement).value, false);
   }
 
   protected onHourInputBlur(event: Event): void {
-    this.updateHourFromEvent(event, true);
+    this.updateHourFromText((event.target as HTMLInputElement).value, true);
   }
 
   protected onMinuteInputChange(event: Event): void {
-    this.updateMinuteFromEvent(event, false);
+    this.updateMinuteFromText((event.target as HTMLInputElement).value, false);
   }
 
   protected onMinuteInputBlur(event: Event): void {
-    this.updateMinuteFromEvent(event, true);
-  }
-
-  private updateHourFromEvent(event: Event, clamp: boolean): void {
-    this.updateHourFromText((event.target as HTMLInputElement).value, clamp);
-  }
-
-  private updateMinuteFromEvent(event: Event, clamp: boolean): void {
-    this.updateMinuteFromText((event.target as HTMLInputElement).value, clamp);
+    this.updateMinuteFromText((event.target as HTMLInputElement).value, true);
   }
 
   private updateHourFromText(raw: string, clamp: boolean): void {
@@ -243,17 +225,13 @@ export class TimePickerComponent {
     clamp: boolean,
   ): number | null {
     const trimmed = raw.trim();
-    if (!this.isValidNumericInput(trimmed)) return null;
+    if (!TimePickerComponent.VALID_TIME_INPUT_PATTERN.test(trimmed)) return null;
 
     const parsed = Number.parseInt(trimmed, 10);
     if (Number.isNaN(parsed)) return null;
     if (clamp) return Math.min(max, Math.max(min, parsed));
     if (parsed < min || parsed > max) return null;
     return parsed;
-  }
-
-  private isValidNumericInput(value: string): boolean {
-    return TimePickerComponent.VALID_TIME_INPUT_PATTERN.test(value);
   }
 
   private emit(hour: number, minute: number): void {

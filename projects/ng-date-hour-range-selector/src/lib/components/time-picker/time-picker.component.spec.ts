@@ -290,6 +290,26 @@ describe('TimePickerComponent', () => {
 
       expect(emitted[0]).toEqual({ hour: 10, minute: 59 });
     });
+
+    it('clamps out-of-range hour values on blur in 24h mode', () => {
+      createFixture(10, 30, { timeFormat: '24h', allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      changeInput('Hour (0 to 23)', '99', 'blur');
+
+      expect(emitted[0]).toEqual({ hour: 23, minute: 30 });
+    });
+
+    it('clamps out-of-range hour values on blur in 12h mode preserving meridiem', () => {
+      createFixture(14, 30, { timeFormat: '12h', allowManualTimeInput: true });
+      const emitted: TimeValue[] = [];
+      component.timeChange.subscribe((v) => emitted.push(v));
+
+      changeInput('Hour (1 to 12)', '99', 'blur');
+
+      expect(emitted[0]).toEqual({ hour: 12, minute: 30 });
+    });
   });
 
   // ─── AM/PM toggle ───────────────────────────────────────────────────────
