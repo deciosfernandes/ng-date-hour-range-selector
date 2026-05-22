@@ -214,7 +214,29 @@ readonly maxDate = new Date(this._now.getFullYear(), this._now.getMonth() + 1, 0
 &lt;!-- Override --drs-primary to re-theme the entire picker --&gt;</code></pre>
   </section>
 
-  <!-- ─── 9. Deferred emission (emitOn: 'close') ──────────────────────── -->
+  <!-- ─── 9. Manual time input ───────────────────────────────────────── -->
+  <section class="demo-section">
+    <h2>manual time input · type hours &amp; minutes directly</h2>
+    <p class="demo-desc">
+      Set <code>[allowManualTimeInput]="true"</code> to replace the read-only time display with
+      editable text inputs. Values are validated on each keystroke; out-of-range values are
+      clamped when the input loses focus.
+    </p>
+    <drs-date-range-picker
+      [allowManualTimeInput]="true"
+      timeFormat="24h"
+      ariaLabel="Manual time input picker"
+    />
+    <pre class="demo-code"><code>&lt;drs-date-range-picker
+  [allowManualTimeInput]="true"
+  timeFormat="24h"
+/&gt;
+
+&lt;!-- Works with 12h format too:
+     [allowManualTimeInput]="true" timeFormat="12h" --&gt;</code></pre>
+  </section>
+
+  <!-- ─── 10. Deferred emission (emitOn: 'close') ────────────────────── -->
   <section class="demo-section">
     <h2>deferred emission · <code>emitOn="close"</code></h2>
     <p class="demo-desc">

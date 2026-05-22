@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { PICKER_LOCALE } from '../../tokens/locale.token';
 
 export interface TimeValue {
@@ -26,21 +26,25 @@ export interface TimeValue {
           &#8963;
         </button>
         @if (allowManualTimeInput()) {
+          <span [id]="_uid + '-hdesc'" class="drs-sr-only">
+            {{
+              timeFormat() === '12h'
+                ? 'Enter an hour between 1 and 12. Use the increment and decrement buttons for step changes.'
+                : 'Enter an hour between 0 and 23. Use the increment and decrement buttons for step changes.'
+            }}
+          </span>
           <input
             class="drs-time__input"
             type="text"
             inputmode="numeric"
             pattern="[0-9]*"
             maxlength="2"
-            [value]="displayHour()"
+            [value]="hourEdit() ?? displayHour()"
             [attr.aria-label]="timeFormat() === '12h' ? 'Hour (1 to 12)' : 'Hour (0 to 23)'"
-            [attr.aria-description]="
-              timeFormat() === '12h'
-                ? 'Enter an hour between 1 and 12. Use the increment and decrement buttons for step changes.'
-                : 'Enter an hour between 0 and 23. Use the increment and decrement buttons for step changes.'
-            "
-            (change)="onHourInputChange($event)"
+            [attr.aria-describedby]="_uid + '-hdesc'"
+            (input)="onHourInputInput($event)"
             (blur)="onHourInputBlur($event)"
+            (keydown)="onHourInputKeydown($event)"
           />
         } @else {
           <span class="drs-time__value" aria-live="polite">{{ displayHour() }}</span>
@@ -69,17 +73,22 @@ export interface TimeValue {
           &#8963;
         </button>
         @if (allowManualTimeInput()) {
+          <span [id]="_uid + '-mdesc'" class="drs-sr-only">
+            Enter minutes between 0 and 59. Use the increment and decrement buttons for step
+            changes.
+          </span>
           <input
             class="drs-time__input"
             type="text"
             inputmode="numeric"
             pattern="[0-9]*"
             maxlength="2"
-            [value]="displayMinute()"
+            [value]="minuteEdit() ?? displayMinute()"
             aria-label="Minute (0 to 59)"
-            aria-description="Enter minutes between 0 and 59. Use the increment and decrement buttons for step changes."
-            (change)="onMinuteInputChange($event)"
+            [attr.aria-describedby]="_uid + '-mdesc'"
+            (input)="onMinuteInputInput($event)"
             (blur)="onMinuteInputBlur($event)"
+            (keydown)="onMinuteInputKeydown($event)"
           />
         } @else {
           <span class="drs-time__value" aria-live="polite">{{ displayMinute() }}</span>
@@ -114,7 +123,9 @@ export interface TimeValue {
 })
 export class TimePickerComponent {
   private static readonly VALID_TIME_INPUT_PATTERN = /^\d{1,2}$/;
+  private static _count = 0;
   protected readonly locale = inject(PICKER_LOCALE);
+  protected readonly _uid = `drs-tp-${TimePickerComponent._count++}`;
 
   // ─── Inputs ──────────────────────────────────────────────────────────────
   /** Hour in 24h format (0–23) */
@@ -128,6 +139,10 @@ export class TimePickerComponent {
 
   // ─── Outputs ─────────────────────────────────────────────────────────────
   readonly timeChange = output<TimeValue>();
+
+  // ─── Edit buffers ────────────────────────────────────────────────────────
+  protected readonly hourEdit = signal<string | null>(null);
+  protected readonly minuteEdit = signal<string | null>(null);
 
   // ─── Computed ─────────────────────────────────────────────────────────────
   protected readonly isPM = computed(() => this.hour() >= 12);
@@ -176,20 +191,56 @@ export class TimePickerComponent {
     this.emit(newHour, this.minute());
   }
 
-  protected onHourInputChange(event: Event): void {
-    this.updateHourFromText((event.target as HTMLInputElement).value, false);
+  protected onHourInputInput(event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    this.hourEdit.set(raw);
+    this.updateHourFromText(raw, false);
   }
 
   protected onHourInputBlur(event: Event): void {
-    this.updateHourFromText((event.target as HTMLInputElement).value, true);
+    const raw = (event.target as HTMLInputElement).value;
+    if (this.parseHour(raw, false) === null) {
+      this.updateHourFromText(raw, true);
+    }
+    this.hourEdit.set(null);
   }
 
-  protected onMinuteInputChange(event: Event): void {
-    this.updateMinuteFromText((event.target as HTMLInputElement).value, false);
+  protected onHourInputKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.hourEdit.set(null);
+      this.incrementHour();
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.hourEdit.set(null);
+      this.decrementHour();
+    }
+  }
+
+  protected onMinuteInputInput(event: Event): void {
+    const raw = (event.target as HTMLInputElement).value;
+    this.minuteEdit.set(raw);
+    this.updateMinuteFromText(raw, false);
   }
 
   protected onMinuteInputBlur(event: Event): void {
-    this.updateMinuteFromText((event.target as HTMLInputElement).value, true);
+    const raw = (event.target as HTMLInputElement).value;
+    if (this.parseBoundedInteger(raw, 0, 59, false) === null) {
+      this.updateMinuteFromText(raw, true);
+    }
+    this.minuteEdit.set(null);
+  }
+
+  protected onMinuteInputKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.minuteEdit.set(null);
+      this.incrementMinute();
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.minuteEdit.set(null);
+      this.decrementMinute();
+    }
   }
 
   private updateHourFromText(raw: string, clamp: boolean): void {
