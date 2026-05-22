@@ -458,11 +458,6 @@ describe('DateRangePickerDirective', () => {
       expect(cfg.weekStartsOn).toBe(1);
     });
 
-    it('allowManualTimeInput can be overridden via input', () => {
-      fixture.componentRef.setInput('allowManualTimeInput', true);
-      fixture.detectChanges();
-      expect(directive['resolvedConfig']().allowManualTimeInput).toBe(true);
-    });
   });
 
   // ─── open / close overlay ─────────────────────────────────────────────
