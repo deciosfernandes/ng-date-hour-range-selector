@@ -25,7 +25,21 @@ export interface TimeValue {
         >
           &#8963;
         </button>
-        <span class="drs-time__value" aria-live="polite">{{ displayHour() }}</span>
+        @if (allowManualTimeInput()) {
+          <input
+            class="drs-time__input"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="2"
+            [value]="displayHour()"
+            [attr.aria-label]="timeFormat() === '12h' ? 'Hour (1 to 12)' : 'Hour (0 to 23)'"
+            (change)="onHourInputChange($event)"
+            (blur)="onHourInputBlur($event)"
+          />
+        } @else {
+          <span class="drs-time__value" aria-live="polite">{{ displayHour() }}</span>
+        }
         <button
           class="drs-time__btn"
           type="button"
@@ -49,7 +63,21 @@ export interface TimeValue {
         >
           &#8963;
         </button>
-        <span class="drs-time__value" aria-live="polite">{{ displayMinute() }}</span>
+        @if (allowManualTimeInput()) {
+          <input
+            class="drs-time__input"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="2"
+            [value]="displayMinute()"
+            aria-label="Minute (0 to 59)"
+            (change)="onMinuteInputChange($event)"
+            (blur)="onMinuteInputBlur($event)"
+          />
+        } @else {
+          <span class="drs-time__value" aria-live="polite">{{ displayMinute() }}</span>
+        }
         <button
           class="drs-time__btn"
           type="button"
@@ -88,6 +116,7 @@ export class TimePickerComponent {
   minute = input.required<number>();
   timeFormat = input<'12h' | '24h'>('12h');
   minuteStep = input<number>(1);
+  allowManualTimeInput = input<boolean>(false);
   ariaLabel = input<string>('Time picker');
 
   // ─── Outputs ─────────────────────────────────────────────────────────────
@@ -138,6 +167,64 @@ export class TimePickerComponent {
   protected toggleAmPm(): void {
     const newHour = this.isPM() ? this.hour() - 12 : this.hour() + 12;
     this.emit(newHour, this.minute());
+  }
+
+  protected onHourInputChange(event: Event): void {
+    this.updateHourFromText((event.target as HTMLInputElement).value, false);
+  }
+
+  protected onHourInputBlur(event: Event): void {
+    this.updateHourFromText((event.target as HTMLInputElement).value, true);
+  }
+
+  protected onMinuteInputChange(event: Event): void {
+    this.updateMinuteFromText((event.target as HTMLInputElement).value, false);
+  }
+
+  protected onMinuteInputBlur(event: Event): void {
+    this.updateMinuteFromText((event.target as HTMLInputElement).value, true);
+  }
+
+  private updateHourFromText(raw: string, clamp: boolean): void {
+    const hour = this.parseHour(raw, clamp);
+    if (hour === null) return;
+    this.emit(hour, this.minute());
+  }
+
+  private updateMinuteFromText(raw: string, clamp: boolean): void {
+    const minute = this.parseBoundedInteger(raw, 0, 59, clamp);
+    if (minute === null) return;
+    this.emit(this.hour(), minute);
+  }
+
+  private parseHour(raw: string, clamp: boolean): number | null {
+    if (this.timeFormat() === '24h') {
+      return this.parseBoundedInteger(raw, 0, 23, clamp);
+    }
+
+    const parsed12h = this.parseBoundedInteger(raw, 1, 12, clamp);
+    if (parsed12h === null) return null;
+
+    if (parsed12h === 12) {
+      return this.isPM() ? 12 : 0;
+    }
+    return this.isPM() ? parsed12h + 12 : parsed12h;
+  }
+
+  private parseBoundedInteger(
+    raw: string,
+    min: number,
+    max: number,
+    clamp: boolean,
+  ): number | null {
+    const trimmed = raw.trim();
+    if (!/^\d{1,2}$/.test(trimmed)) return null;
+
+    const parsed = Number.parseInt(trimmed, 10);
+    if (Number.isNaN(parsed)) return null;
+    if (clamp) return Math.min(max, Math.max(min, parsed));
+    if (parsed < min || parsed > max) return null;
+    return parsed;
   }
 
   private emit(hour: number, minute: number): void {

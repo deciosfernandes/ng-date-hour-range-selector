@@ -8,6 +8,8 @@ export interface PickerConfig {
   timeFormat?: '12h' | '24h';
   /** Minute increment step. Default: 1 */
   minuteStep?: number;
+  /** Allow editing hour/minute directly in text inputs. Default: false */
+  allowManualTimeInput?: boolean;
   /** CDK overlay connected positions. Defaults to bottom-start with top-start fallback */
   position?: ConnectedPosition[];
   /**

@@ -37,6 +37,7 @@
             [minute]="startMinute()"
             [timeFormat]="config().timeFormat"
             [minuteStep]="config().minuteStep"
+            [allowManualTimeInput]="config().allowManualTimeInput"
             [ariaLabel]="locale().startTime"
             (timeChange)="startTimeChange.emit($event)"
           />
@@ -50,6 +51,7 @@
             [minute]="endMinute()"
             [timeFormat]="config().timeFormat"
             [minuteStep]="config().minuteStep"
+            [allowManualTimeInput]="config().allowManualTimeInput"
             [ariaLabel]="locale().endTime"
             (timeChange)="endTimeChange.emit($event)"
           />
