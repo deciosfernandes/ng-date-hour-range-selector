@@ -119,6 +119,7 @@ export interface TimeValue {
   `,
 })
 export class TimePickerComponent {
+  private static readonly ONE_OR_TWO_DIGITS = /^\d{1,2}$/;
   private static nextId = 0;
   private readonly id = TimePickerComponent.nextId++;
   protected readonly hourHelpId = `drs-time-hour-help-${this.id}`;
@@ -186,19 +187,27 @@ export class TimePickerComponent {
   }
 
   protected onHourInputChange(event: Event): void {
-    this.updateHourFromText((event.target as HTMLInputElement).value, false);
+    this.updateHourFromEvent(event, false);
   }
 
   protected onHourInputBlur(event: Event): void {
-    this.updateHourFromText((event.target as HTMLInputElement).value, true);
+    this.updateHourFromEvent(event, true);
   }
 
   protected onMinuteInputChange(event: Event): void {
-    this.updateMinuteFromText((event.target as HTMLInputElement).value, false);
+    this.updateMinuteFromEvent(event, false);
   }
 
   protected onMinuteInputBlur(event: Event): void {
-    this.updateMinuteFromText((event.target as HTMLInputElement).value, true);
+    this.updateMinuteFromEvent(event, true);
+  }
+
+  private updateHourFromEvent(event: Event, clamp: boolean): void {
+    this.updateHourFromText((event.target as HTMLInputElement).value, clamp);
+  }
+
+  private updateMinuteFromEvent(event: Event, clamp: boolean): void {
+    this.updateMinuteFromText((event.target as HTMLInputElement).value, clamp);
   }
 
   private updateHourFromText(raw: string, clamp: boolean): void {
@@ -234,7 +243,7 @@ export class TimePickerComponent {
     clamp: boolean,
   ): number | null {
     const trimmed = raw.trim();
-    if (!/^\d{1,2}$/.test(trimmed)) return null;
+    if (!TimePickerComponent.ONE_OR_TWO_DIGITS.test(trimmed)) return null;
 
     const parsed = Number.parseInt(trimmed, 10);
     if (Number.isNaN(parsed)) return null;
