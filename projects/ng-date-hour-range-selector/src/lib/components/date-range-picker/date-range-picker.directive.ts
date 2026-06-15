@@ -18,7 +18,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { PickerConfig } from '../../models/config.model';
-import { DateRange, PredefinedRange } from '../../models/date-range.model';
+import { DateRange, GrafanaTimeRange, PredefinedRange } from '../../models/date-range.model';
 import { DateUtilsService } from '../../services/date-utils.service';
 import { DEFAULT_PICKER_CONFIG, PICKER_CONFIG } from '../../tokens/config.token';
 import { PICKER_LOCALE } from '../../tokens/locale.token';
@@ -89,6 +89,16 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
 
   // ─── Outputs ─────────────────────────────────────────────────────────────
   readonly rangeChange = output<DateRange | null>();
+  /**
+   * Emitted alongside `rangeChange` whenever a range is committed.
+   *
+   * - When the committed range originated from a `PredefinedRange` that has a
+   *   `grafanaRange` property set, that Grafana object is emitted as-is.
+   * - Otherwise (manual date selection or a predefined range without `grafanaRange`)
+   *   an ISO-string fallback is emitted: `{ from: start.toISOString(), to: end.toISOString() }`.
+   * - Emits `null` when the picker is reset.
+   */
+  readonly grafanaRangeChange = output<GrafanaTimeRange | null>();
 
   // ─── Internal state ───────────────────────────────────────────────────────
   protected readonly isOpen = signal(false);
@@ -97,6 +107,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
   protected readonly rangeStart = signal<Date | null>(null);
   protected readonly rangeEnd = signal<Date | null>(null);
   protected readonly activeRangeLabel = signal<string | null>(null);
+  private readonly _activeGrafanaRange = signal<GrafanaTimeRange | null>(null);
   private readonly _pendingStartHour = signal(0);
   private readonly _pendingStartMinute = signal(0);
   private readonly _pendingEndHour = signal(23);
@@ -316,6 +327,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
       this.rangeStart.set(newStart);
       this.rangeEnd.set(null);
       this.activeRangeLabel.set(null);
+      this._activeGrafanaRange.set(null);
       return;
     }
 
@@ -335,7 +347,9 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
 
     this.rangeStart.set(newStart);
     this.rangeEnd.set(newEnd);
-    this.activeRangeLabel.set(this._matchPredefinedRange({ start: newStart, end: newEnd }));
+    const matched = this._matchPredefinedRange({ start: newStart, end: newEnd });
+    this.activeRangeLabel.set(matched?.label ?? null);
+    this._activeGrafanaRange.set(matched?.grafanaRange ?? null);
     if (this.resolvedConfig().emitOn === 'change') {
       this._commitValue({ start: newStart, end: newEnd });
     }
@@ -348,6 +362,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
     this.rangeStart.set(dr.start);
     this.rangeEnd.set(dr.end);
     this.activeRangeLabel.set(range.label);
+    this._activeGrafanaRange.set(range.grafanaRange ?? null);
     this._viewYear.set(dr.start.getFullYear());
     this._viewMonth.set(dr.start.getMonth());
     if (this.resolvedConfig().emitOn === 'change') {
@@ -360,6 +375,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
     this.rangeStart.set(null);
     this.rangeEnd.set(null);
     this.activeRangeLabel.set(null);
+    this._activeGrafanaRange.set(null);
     this.value.set(null);
     this._pendingStartHour.set(0);
     this._pendingStartMinute.set(0);
@@ -367,6 +383,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
     this._pendingEndMinute.set(59);
     this.onChange(null);
     this.rangeChange.emit(null);
+    this.grafanaRangeChange.emit(null);
     if (this.resolvedConfig().closeOnSelect) this.close();
   }
 
@@ -426,17 +443,23 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
       this.rangeEnd.set(range.end);
       this._viewYear.set(range.start.getFullYear());
       this._viewMonth.set(range.start.getMonth());
-      this.activeRangeLabel.set(this._matchPredefinedRange(range));
+      const matched = this._matchPredefinedRange(range);
+      this.activeRangeLabel.set(matched?.label ?? null);
+      this._activeGrafanaRange.set(matched?.grafanaRange ?? null);
       this.value.set(range);
       if (emitEvent) {
         this.onChange(range);
         this.rangeChange.emit(range);
+        this.grafanaRangeChange.emit(
+          this._activeGrafanaRange() ?? { from: range.start.toISOString(), to: range.end.toISOString() },
+        );
       }
     } else {
       this._clearState();
       if (emitEvent) {
         this.onChange(null);
         this.rangeChange.emit(null);
+        this.grafanaRangeChange.emit(null);
       }
     }
   }
@@ -450,7 +473,9 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
       this.rangeEnd.set(v.end);
       this._viewYear.set(v.start.getFullYear());
       this._viewMonth.set(v.start.getMonth());
-      this.activeRangeLabel.set(this._matchPredefinedRange(v));
+      const matched = this._matchPredefinedRange(v);
+      this.activeRangeLabel.set(matched?.label ?? null);
+      this._activeGrafanaRange.set(matched?.grafanaRange ?? null);
     } else {
       this._clearState();
     }
@@ -473,6 +498,9 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
     this.value.set(range);
     this.onChange(range);
     this.rangeChange.emit(range);
+    this.grafanaRangeChange.emit(
+      this._activeGrafanaRange() ?? { from: range.start.toISOString(), to: range.end.toISOString() },
+    );
   }
 
   /**
@@ -490,7 +518,9 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
       const v = this.value();
       this.rangeStart.set(v?.start ?? null);
       this.rangeEnd.set(v?.end ?? null);
-      this.activeRangeLabel.set(v ? this._matchPredefinedRange(v) : null);
+      const matched = v ? this._matchPredefinedRange(v) : null;
+      this.activeRangeLabel.set(matched?.label ?? null);
+      this._activeGrafanaRange.set(matched?.grafanaRange ?? null);
     }
   }
 
@@ -499,7 +529,9 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
     this.rangeEnd.set(range.end);
     this._viewYear.set(range.start.getFullYear());
     this._viewMonth.set(range.start.getMonth());
-    this.activeRangeLabel.set(this._matchPredefinedRange(range));
+    const matched = this._matchPredefinedRange(range);
+    this.activeRangeLabel.set(matched?.label ?? null);
+    this._activeGrafanaRange.set(matched?.grafanaRange ?? null);
     this._commitValue(range);
   }
 
@@ -507,6 +539,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
     this.rangeStart.set(null);
     this.rangeEnd.set(null);
     this.activeRangeLabel.set(null);
+    this._activeGrafanaRange.set(null);
     this._pendingStartHour.set(0);
     this._pendingStartMinute.set(0);
     this._pendingEndHour.set(23);
@@ -521,6 +554,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
       this.rangeStart.set(dr.start);
       this.rangeEnd.set(dr.end);
       this.activeRangeLabel.set(init.label);
+      this._activeGrafanaRange.set(init.grafanaRange ?? null);
       this._viewYear.set(dr.start.getFullYear());
       this._viewMonth.set(dr.start.getMonth());
       this.value.set(dr);
@@ -529,20 +563,22 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
       this.rangeEnd.set(init.end);
       this._viewYear.set(init.start.getFullYear());
       this._viewMonth.set(init.start.getMonth());
-      this.activeRangeLabel.set(this._matchPredefinedRange(init));
+      const matched = this._matchPredefinedRange(init);
+      this.activeRangeLabel.set(matched?.label ?? null);
+      this._activeGrafanaRange.set(matched?.grafanaRange ?? null);
       this.value.set(init);
     }
   }
 
   /**
-   * Returns the label of the first predefined range that matches the given range,
+   * Returns the first predefined range that matches the given range,
    * or `null` if no match is found.
    *
    * When `rangeMatchMode` is `'day'` (default), comparison ignores time and only
    * checks that the start/end fall on the same calendar days.
    * When `rangeMatchMode` is `'exact'`, both timestamps must match precisely.
    */
-  private _matchPredefinedRange(range: DateRange): string | null {
+  private _matchPredefinedRange(range: DateRange): PredefinedRange | null {
     const exact = this.resolvedConfig().rangeMatchMode === 'exact';
     for (const pr of this.resolvedPredefinedRanges()) {
       const dr = pr.range();
@@ -553,7 +589,7 @@ export class DateRangePickerDirective implements ControlValueAccessor, OnInit, O
         ? dr.end.getTime() === range.end.getTime()
         : this.dateUtils.isSameDay(dr.end, range.end);
       if (startMatch && endMatch) {
-        return pr.label;
+        return pr;
       }
     }
     return null;
